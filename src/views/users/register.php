@@ -57,7 +57,7 @@
                 </div>
               </div>
               <div class="card-actions">
-                <a href="/users/login" class="button"> 已有账号？返回登录 </a>
+                <a href="/users/login<?php if (isset($_GET['redirect'])) echo '?redirect=' . $_GET['redirect'] ?>" class="button"> 已有账号？返回登录 </a>
                 <button class="button button-primary" type="submit">
                   注册
                 </button>
@@ -86,8 +86,6 @@
     document
       .getElementById("register-form")
       .addEventListener("submit", (e) => {
-        e.preventDefault();
-
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
         const passwordConfirm =
@@ -95,15 +93,14 @@
 
         if (!username || !password || !passwordConfirm) {
           alert("请填写完整信息");
+          e.preventDefault();
           return;
         }
         if (password !== passwordConfirm) {
           alert("两次输入的密码不一致");
+          e.preventDefault();
           return;
         }
-
-        localStorage.setItem("username", username);
-        location.href = "/";
       });
   </script>
 </body>

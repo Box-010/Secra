@@ -19,9 +19,17 @@
         <div class="auth-card-image" id="auth-card-image"></div>
         <div class="auth-card-content">
           <form action="/users/login" method="post" id="login-form">
+            <?php if (isset($_GET['redirect'])) : ?>
+              <input type="hidden" name="redirect" value="<?php echo $_GET['redirect']; ?>" />
+            <?php endif; ?>
             <div class="card">
               <div class="card-content">
                 <h1>登录</h1>
+                <?php if (isset($_GET['error'])) : ?>
+                  <div class="alert alert-error">
+                    <?php echo $_GET['error']; ?>
+                  </div>
+                <?php endif; ?>
                 <div class="textfield-wrapper">
                   <div class="textfield">
                     <span class="icon material-symbols-outlined">
@@ -41,7 +49,7 @@
                 <a class="link" href="/users/forgot-password">忘记密码？</a>
               </div>
               <div class="card-actions">
-                <a href="/users/register" class="button"> 注册 </a>
+                <a href="/users/register<?php if (isset($_GET['redirect'])) echo '?redirect=' . $_GET['redirect'] ?>" class="button"> 注册 </a>
                 <button class="button button-primary" type="submit">
                   登录
                 </button>

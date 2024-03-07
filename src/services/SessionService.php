@@ -37,8 +37,6 @@ class SessionService
       $user = $this->userRepository->getUserByUsername($user);
     }
 
-    session_start();
-
     $current_session_id = $_COOKIE['session_id'] ?? $_SESSION['session_id'] ?? null;
     if ($current_session_id) {
       $oldSession = $this->sessionRepository->getSessionById($current_session_id);
@@ -62,12 +60,14 @@ class SessionService
     return $this->sessionRepository->getSessionById($session->session_id);
   }
 
-  public function deleteSession(string $session_id)
+  public function destoryCurrentSession()
   {
-    session_start();
-    session_destroy();
+    $session_id = $_COOKIE['session_id'] ?? $_SESSION['session_id'] ?? null;
+    if ($session_id) {
+      $this->sessionRepository->delete($session_id);
+    }
     setcookie('session_id', '', time() - 3600, '/', '', false, true);
-    $this->sessionRepository->delete($session_id);
+    session_destroy();
   }
 
   public function validateSession(string $session_id): Session|null

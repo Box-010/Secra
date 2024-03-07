@@ -1,8 +1,8 @@
 <?php
-#[Provide(UserController::class)]
+#[Provide(UsersController::class)]
 #[Singleton]
 #[Controller('/users')]
-class UserController
+class UsersController
 {
   #[Inject] private UserRepository $userRepository;
   #[Inject] private SessionService $sessionService;
@@ -31,12 +31,13 @@ class UserController
   #[Get('register')]
   public function registerPage()
   {
-    require_once(dirname(__DIR__) . '/views/register.php');
+    require_once(dirname(__DIR__) . '/views/users/register.php');
   }
 
   #[Post('register')]
   public function register()
   {
+    $redirect = $_POST['redirect'] ?? '/';
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     if (!$email) {
       $this->location('/users/register', 'Invalid email');
@@ -64,19 +65,20 @@ class UserController
     $user->salt = $randomSalt;
 
     $this->userRepository->save($user);
-    $this->sessionService->createSession($user);
-    $this->location('/');
+    $this->sessionService->createSession($username);
+    $this->location($redirect);
   }
 
   #[Get('login')]
   public function loginPage()
   {
-    require_once(dirname(__DIR__) . '/views/login.php');
+    require_once(dirname(__DIR__) . '/views/users/login.php');
   }
 
   #[Post('login')]
   public function login()
   {
+    $redirect = $_POST['redirect'] ?? '/';
     $user = $this->userRepository->getUserByUsername($_POST['username']);
     if (!$user || !password_verify($_POST['password'] . $user->salt, $user->password)) {
       $this->location('/users/login', 'Invalid username or password');
@@ -84,6 +86,25 @@ class UserController
     }
 
     $this->sessionService->createSession($user);
+    $this->location($redirect);
+  }
+
+  #[Get('logout')]
+  public function logout()
+  {
+    $this->sessionService->destoryCurrentSession();
     $this->location('/');
+  }
+
+  #[Get('forgot-password')]
+  public function forgotPasswordPage()
+  {
+    require_once(dirname(__DIR__) . '/views/users/forgot-password.php');
+  }
+
+  #[Get('me')]
+  public function me()
+  {
+    require_once(dirname(__DIR__) . '/views/users/me.php');
   }
 }

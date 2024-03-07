@@ -1,6 +1,20 @@
 <?php
 global $container;
 $sessionService = $container->get(SessionService::class);
+
+function getWelcomeText(): string
+{
+  $currentHour = (int)date('H');
+  if ($currentHour > 19 || $currentHour < 6) {
+    return "晚上好";
+  } else if ($currentHour > 14) {
+    return "下午好";
+  } else if ($currentHour > 11) {
+    return "中午好";
+  } else {
+    return "早上好";
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -53,7 +67,14 @@ $sessionService = $container->get(SessionService::class);
     <div class="container">
       <div class="top-cards">
         <div class="header-welcome">
-          <div class="welcome-title" id="welcome-text">欢迎</div>
+          <div class="welcome-title" id="welcome-text">
+            <?php
+            echo getWelcomeText();
+            if ($sessionService->getCurrentUser()) {
+              echo "，{$sessionService->getCurrentUser()->user_name}";
+            }
+            ?>
+          </div>
           <div class="welcome-subtitle text-secondary">
             今天你想说点什么？
           </div>
@@ -170,7 +191,7 @@ $sessionService = $container->get(SessionService::class);
     </div>
 
     <?php if ($sessionService->getCurrentUser()) : ?>
-      <a class="button button-fab" id="publish-fab" href="./publish.html">
+      <a class="button button-fab" id="publish-fab" href="/publish">
         <span class="icon material-symbols-outlined"> edit </span>
         <span class="button-fab-text">发布</span>
       </a>
@@ -183,23 +204,6 @@ $sessionService = $container->get(SessionService::class);
   <script src="./scripts/input.js"></script>
   <script src="./scripts/utils.js"></script>
   <script>
-    const welcomeText = document.getElementById("welcome-text");
-
-    function getWelcomeText() {
-      const currentHour = new Date().getHours();
-      if (currentHour > 19 || currentHour < 6) {
-        return "晚上好";
-      } else if (currentHour > 14) {
-        return "下午好";
-      } else if (currentHour > 11) {
-        return "中午好";
-      } else {
-        return "早上好";
-      }
-    }
-
-    welcomeText.textContent = getWelcomeText();
-
     const imageInputEl = document.getElementById("image-input");
     const selectedImages = [];
 

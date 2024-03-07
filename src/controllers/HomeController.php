@@ -10,9 +10,9 @@ class HomeController
     include_once(dirname(__DIR__) . '/views/home.php');
   }
 
-  #[Get('install')]
-  public function install()
+  #[Get('publish')]
+  public function publishPage()
   {
-    include_once(dirname(__DIR__) . '/install.php');
+    include_once(dirname(__DIR__) . '/views/publish.php');
   }
 }

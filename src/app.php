@@ -9,6 +9,7 @@ require_once('models/repositories/SessionRepository.php');
 require_once('services/SessionService.php');
 
 ini_set('session.cookie_httponly', '1');
+ini_set('date.timezone', 'Asia/Shanghai');
 
 global $container;
 $container = new Container();

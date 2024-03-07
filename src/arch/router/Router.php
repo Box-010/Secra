@@ -40,6 +40,7 @@ class Route
   public function __construct(
     public string $controller,
     public string $method,
+    public string $basePath,
     public string $fullPath,
     public array $pathPatternItems,
   ) {
@@ -55,7 +56,7 @@ class Route
       }
       if ($pathPatternItem->isDynamicParam) {
         if ($pathPatternItem->dynamicParam->hasPattern) {
-          $regex .= $pathPatternItem->dynamicParam->pattern;
+          $regex .= '(' . $pathPatternItem->dynamicParam->pattern . ')';
         } else {
           $regex .= '([^\/]+)';
         }
@@ -237,6 +238,7 @@ class Router
           $route = new Route(
             $controller,
             $method->getName(),
+            $basePath,
             $path,
             $this->parsePathPattern($path)
           );
@@ -244,12 +246,13 @@ class Router
             $this->getRoutes[$controller] = [];
           }
           $this->getRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: GET $path, controller: $controller");
+          $this->logger->debug("Route registered: GET $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
         } else if ($postAttribute = getAttribute($method, Post::class)) {
           $path = $postAttribute->path;
           $route = new Route(
             $controller,
             $method->getName(),
+            $basePath,
             $path,
             $this->parsePathPattern($path)
           );
@@ -257,7 +260,7 @@ class Router
             $this->postRoutes[$controller] = [];
           }
           $this->postRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: POST $path, controller: $controller");
+          $this->logger->debug("Route registered: POST $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
         }
       }
       $this->logger->debug("Controller registered: $controller");
@@ -355,6 +358,7 @@ class Router
         }
         foreach ($routes[$controller] as $route) {
           $matchResult = $route->match($path);
+          $this->logger->debug("Matching route: $route->fullPath, result: " . json_encode($matchResult));
           if ($matchResult->isMatch) {
             $matched = true;
             $controllerInstance = $this->container->get($controller);

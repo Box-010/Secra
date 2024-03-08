@@ -3,12 +3,12 @@
 namespace Secra\Repositories;
 
 use PDO;
-use Secra\Models\User;
-use Secra\Models\Role;
-use Secra\Arch\DI\Attributes\Singleton;
-use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Inject;
+use Secra\Arch\DI\Attributes\Provide;
+use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Database;
+use Secra\Models\Role;
+use Secra\Models\User;
 
 #[Provide(UserRepository::class)]
 #[Singleton]

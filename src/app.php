@@ -3,12 +3,12 @@ require_once(dirname(__DIR__) . '/config/admin.php');
 require_once(dirname(__DIR__) . '/config/database.php');
 require_once(__DIR__ . '/autoload.php');
 
-use Secra\Database;
 use Secra\Arch\DI\Container;
-use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Logger\FileLogger;
+use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Logger\LogLevel;
 use Secra\Arch\Router\Router;
+use Secra\Database;
 use Secra\Repositories\SessionRepository;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
@@ -37,13 +37,9 @@ $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
   $logger = $container->get(ILogger::class);
   $logger->error($e->getMessage());
   http_response_code(500);
-  echo $e->getMessage();
-  echo '<br>';
-  echo $e->getTraceAsString();
+  echo 'Internal Server Error';
 });
 
 $sessionService = $container->get(SessionService::class);
 
-$route = substr($_SERVER['REQUEST_URI'], 0, 1) === '/' ? $path = substr($_SERVER['REQUEST_URI'], 1) : $path = $_SERVER['REQUEST_URI'];
-
-$router->route($route, $_SERVER['REQUEST_METHOD']);
+$router->route($_GET["route"], $_SERVER['REQUEST_METHOD']);

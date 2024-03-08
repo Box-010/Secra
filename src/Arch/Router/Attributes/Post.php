@@ -7,7 +7,7 @@ use Attribute;
 
 /**
  * 标记一个方法为 POST 请求处理器
- * 
+ *
  * @param string $path 请求路径模式
  */
 #[Attribute]

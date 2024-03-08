@@ -9,6 +9,7 @@ use Attribute;
 class Provide
 {
   public string $class;
+
   public function __construct(string $class)
   {
     $this->class = $class;

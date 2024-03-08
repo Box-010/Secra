@@ -12,30 +12,12 @@ class Route
     public string $method,
     public string $basePath,
     public string $fullPath,
-    public array $pathPatternItems,
-  ) {
+    public array  $pathPatternItems,
+  )
+  {
   }
 
   // 生成匹配路径的正则表达式，头尾匹配
-  private function generateRegex()
-  {
-    $regex = '/^[\/]{0,1}';
-    foreach ($this->pathPatternItems as $index => $pathPatternItem) {
-      if ($index > 0) {
-        $regex .= '\/';
-      }
-      if ($pathPatternItem->isDynamicParam) {
-        if ($pathPatternItem->dynamicParam->hasPattern) {
-          $regex .= '(' . $pathPatternItem->dynamicParam->pattern . ')';
-        } else {
-          $regex .= '([^\/]+)';
-        }
-      } else {
-        $regex .= $pathPatternItem->name;
-      }
-    }
-    return $regex . '$/i';
-  }
 
   public function match($path)
   {
@@ -57,5 +39,25 @@ class Route
       return new MatchResult(true, $params);
     }
     return new MatchResult(false, []);
+  }
+
+  private function generateRegex()
+  {
+    $regex = '/^[\/]{0,1}';
+    foreach ($this->pathPatternItems as $index => $pathPatternItem) {
+      if ($index > 0) {
+        $regex .= '\/';
+      }
+      if ($pathPatternItem->isDynamicParam) {
+        if ($pathPatternItem->dynamicParam->hasPattern) {
+          $regex .= '(' . $pathPatternItem->dynamicParam->pattern . ')';
+        } else {
+          $regex .= '([^\/]+)';
+        }
+      } else {
+        $regex .= $pathPatternItem->name;
+      }
+    }
+    return $regex . '$/i';
   }
 }

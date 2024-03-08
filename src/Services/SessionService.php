@@ -20,9 +20,10 @@ class SessionService
 
   public function __construct(
     #[Inject] private SessionRepository $sessionRepository,
-    #[Inject] private UserRepository $userRepository,
-    #[Inject] private ILogger $logger
-  ) {
+    #[Inject] private UserRepository    $userRepository,
+    #[Inject] private ILogger           $logger
+  )
+  {
     session_start();
     $session_id = $_COOKIE['session_id'] ?? $_SESSION['session_id'] ?? null;
     if ($session_id) {
@@ -31,6 +32,18 @@ class SessionService
         $this->currentUser = $this->userRepository->getUserById($this->currentSession->user_id);
       }
     }
+  }
+
+  public function validateSession(string $session_id): Session|null
+  {
+    $session = $this->sessionRepository->getSessionById($session_id);
+    if ($session) {
+      if (strtotime($session->expires_at) > time()) {
+        return $session;
+      }
+      $this->sessionRepository->delete($session_id);
+    }
+    return null;
   }
 
   public function getCurrentUser(): User|null
@@ -80,17 +93,5 @@ class SessionService
     }
     setcookie('session_id', '', time() - 3600, '/', '', false, true);
     session_destroy();
-  }
-
-  public function validateSession(string $session_id): Session|null
-  {
-    $session = $this->sessionRepository->getSessionById($session_id);
-    if ($session) {
-      if (strtotime($session->expires_at) > time()) {
-        return $session;
-      }
-      $this->sessionRepository->delete($session_id);
-    }
-    return null;
   }
 }

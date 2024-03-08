@@ -6,10 +6,10 @@ use PDOException;
 use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\Attributes\Post;
-use Secra\Arch\Logger\ILogger;
 use Secra\Models\User;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
@@ -23,26 +23,6 @@ class UsersController
   #[Inject] private UserRepository $userRepository;
   #[Inject] private SessionService $sessionService;
   #[Inject] private ILogger $logger;
-
-  private function get_pdo_exception_message(PDOException $e)
-  {
-    $code = $e->getCode();
-    if ($code === '23000') {
-      return 'User already exists';
-    }
-    $this->logger->error($e->getMessage());
-    return 'Internal error';
-  }
-
-  private function location(string $location, string|null $error = null)
-  {
-    if ($error) {
-      $error = urlencode($error);
-      header("Location: {$location}?error={$error}");
-    } else {
-      header("Location: {$location}");
-    }
-  }
 
   #[Get('register')]
   public function registerPage()
@@ -85,6 +65,16 @@ class UsersController
     $this->location($redirect);
   }
 
+  private function location(string $location, string|null $error = null)
+  {
+    if ($error) {
+      $error = urlencode($error);
+      header("Location: {$location}?error={$error}");
+    } else {
+      header("Location: {$location}");
+    }
+  }
+
   #[Get('login')]
   public function loginPage()
   {
@@ -122,5 +112,15 @@ class UsersController
   public function me()
   {
     include(dirname(__DIR__) . '/Views/users/me.php');
+  }
+
+  private function get_pdo_exception_message(PDOException $e)
+  {
+    $code = $e->getCode();
+    if ($code === '23000') {
+      return 'User already exists';
+    }
+    $this->logger->error($e->getMessage());
+    return 'Internal error';
   }
 }

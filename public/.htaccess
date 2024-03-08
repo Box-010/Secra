@@ -7,5 +7,5 @@
     # Redirect requests to index.php if an existing file or directory is not found
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php [L,QSA] 
+    RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
 </IfModule>

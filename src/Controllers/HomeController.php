@@ -1,0 +1,27 @@
+<?php
+
+namespace Secra\Controllers;
+
+use Secra\Arch\DI\Attributes\Provide;
+use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Arch\Router\Attributes\Get;
+use Secra\Arch\Router\Attributes\Controller;
+
+
+#[Provide(HomeController::class)]
+#[Singleton]
+#[Controller('/')]
+class HomeController
+{
+  #[Get('')]
+  public function index()
+  {
+    include_once(dirname(__DIR__) . '/Views/home.php');
+  }
+
+  #[Get('publish')]
+  public function publishPage()
+  {
+    include_once(dirname(__DIR__) . '/Views/publish.php');
+  }
+}

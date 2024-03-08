@@ -1,6 +1,9 @@
 <?php
-require_once(__DIR__ . '/arch/DI.php');
-require_once(dirname(__DIR__) . '/config/database.php');
+
+namespace Secra;
+
+use PDO;
+use Secra\Arch\DI\Attributes\Singleton;
 
 #[Singleton]
 class Database

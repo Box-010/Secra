@@ -1,12 +1,17 @@
 <?php
-require_once(__DIR__ . '/arch/DI.php');
-require_once(__DIR__ . '/arch/router/Router.php');
-require_once(__DIR__ . '/utils/Logger.php');
+require_once(dirname(__DIR__) . '/config/admin.php');
+require_once(dirname(__DIR__) . '/config/database.php');
+require_once(__DIR__ . '/autoload.php');
 
-require_once('Database.php');
-require_once('models/repositories/UserRepository.php');
-require_once('models/repositories/SessionRepository.php');
-require_once('services/SessionService.php');
+use Secra\Database;
+use Secra\Arch\DI\Container;
+use Secra\Arch\Logger\ILogger;
+use Secra\Arch\Logger\FileLogger;
+use Secra\Arch\Logger\LogLevel;
+use Secra\Arch\Router\Router;
+use Secra\Repositories\SessionRepository;
+use Secra\Repositories\UserRepository;
+use Secra\Services\SessionService;
 
 ini_set('session.cookie_httponly', '1');
 ini_set('date.timezone', 'Asia/Shanghai');
@@ -16,8 +21,8 @@ $container = new Container();
 $container->set(Database::class, function () {
   return new Database();
 });
-$container->set(Logger::class, function () {
-  return new FileLogger(LogLevel::INFO);
+$container->set(ILogger::class, function () {
+  return new FileLogger(dirname(__DIR__) . '/logs/app.log', LogLevel::INFO);
 });
 $container->registerAll(
   SessionRepository::class,
@@ -29,12 +34,16 @@ $container->registerAll(
 $router = $container->get(Router::class);
 $router->registerStaticRoute('/', dirname(__DIR__) . '/public');
 $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
-  $logger = $container->get(Logger::class);
+  $logger = $container->get(ILogger::class);
   $logger->error($e->getMessage());
   http_response_code(500);
-  echo 'Internal error';
+  echo $e->getMessage();
+  echo '<br>';
+  echo $e->getTraceAsString();
 });
 
 $sessionService = $container->get(SessionService::class);
 
-$router->route($_GET["route"], $_SERVER['REQUEST_METHOD']);
+$route = substr($_SERVER['REQUEST_URI'], 0, 1) === '/' ? $path = substr($_SERVER['REQUEST_URI'], 1) : $path = $_SERVER['REQUEST_URI'];
+
+$router->route($route, $_SERVER['REQUEST_METHOD']);

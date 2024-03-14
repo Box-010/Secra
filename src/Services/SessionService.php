@@ -34,6 +34,11 @@ class SessionService
     }
   }
 
+  public function isUserLoggedIn(): bool
+  {
+    return $this->currentUser !== null;
+  }
+
   public function validateSession(string $session_id): Session|null
   {
     $session = $this->sessionRepository->getSessionById($session_id);

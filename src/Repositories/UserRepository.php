@@ -3,21 +3,15 @@
 namespace Secra\Repositories;
 
 use PDO;
-use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
-use Secra\Database;
 use Secra\Models\Role;
 use Secra\Models\User;
 
 #[Provide(UserRepository::class)]
 #[Singleton]
-class UserRepository
+class UserRepository extends BaseRepository
 {
-  public function __construct(#[Inject] private Database $db)
-  {
-  }
-
   public function getUserById(int $id): User|bool
   {
     $stmt = $this->db->query("SELECT

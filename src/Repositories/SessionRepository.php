@@ -3,18 +3,14 @@
 namespace Secra\Repositories;
 
 use PDO;
-use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
-use Secra\Database;
 use Secra\Models\Session;
 
 #[Provide(SessionRepository::class)]
 #[Singleton]
-class SessionRepository
+class SessionRepository extends BaseRepository
 {
-  #[Inject] private Database $db;
-
   public function getSessionById(string $session_id): Session|bool
   {
     $stmt = $this->db->query("SELECT sessions.*, users.user_name

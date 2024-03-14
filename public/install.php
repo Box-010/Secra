@@ -155,6 +155,7 @@ try {
   $sql = "CREATE TABLE IF NOT EXISTS posts (
     post_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     content TEXT NOT NULL,
+    nickname TEXT,
     author_id INT UNSIGNED,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -191,6 +192,7 @@ try {
     user_id INT UNSIGNED,
     likeable_type VARCHAR(20) NOT NULL,
     likeable_id INT UNSIGNED NOT NULL,
+    like_type ENUM('like', 'dislike') NOT NULL DEFAULT 'like',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY (user_id, likeable_type, likeable_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)

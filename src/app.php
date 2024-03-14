@@ -29,6 +29,7 @@ $container->set(ILogger::class, function () {
 $container->registerAll(
   SessionRepository::class,
   UserRepository::class,
+  SecretsRepository::class,
   SessionService::class,
   Router::class
 );

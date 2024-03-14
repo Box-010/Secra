@@ -44,35 +44,37 @@
   <div class="container">
     <div class="top-cards">
       <?php if ($isLoggedIn) : ?>
-        <div class="card" id="publish">
-          <div class="card-content">
-            <textarea class="post-textarea" placeholder="What's your problem?"></textarea>
-          </div>
-          <div class="card-actions">
-            <div class="textfield-wrapper textfield-wrapper--dense">
-              <div class="textfield">
-                <input type="text" id="nickname" name="nickname" placeholder="可选"/>
-                <label for="nickname">昵称</label>
-              </div>
+        <form action="./secrets" method="post" enctype="multipart/form-data" id="publish-form">
+          <div class="card" id="publish">
+            <div class="card-content">
+              <textarea class="post-textarea" placeholder="What's your problem?" id="content" name="content"></textarea>
             </div>
+            <div class="card-actions">
+              <div class="textfield-wrapper textfield-wrapper--dense">
+                <div class="textfield">
+                  <input type="text" id="nickname" name="nickname" placeholder="可选"/>
+                  <label for="nickname">昵称</label>
+                </div>
+              </div>
 
-            <div class="spacer"></div>
+              <div class="spacer"></div>
 
-            <div class="badge">
-              <div class="insert-image">
-                <input type="file" id="image-input" name="image" accept="image/*" multiple/>
-                <label class="button button-icon" for="image-input">
+              <div class="badge">
+                <div class="insert-image">
+                  <input type="file" id="image-input" name="image" accept="image/*" multiple/>
+                  <label class="button button-icon" for="image-input">
                     <span class="icon material-symbols-outlined">
                       add_photo_alternate
                     </span>
-                </label>
+                  </label>
+                </div>
               </div>
+              <button class="button button-primary" id="publish-btn">
+                发布
+              </button>
             </div>
-            <button class="button button-primary" id="publish-btn">
-              发布
-            </button>
           </div>
-        </div>
+        </form>
       <?php else : ?>
         <div class="auth-container">
           <div class="auth-card">

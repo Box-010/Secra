@@ -34,7 +34,7 @@ use Secra\Models\Secret;
       <?php if (!$isLoggedIn) : ?>
         <?= $render('Components/LoginCard') ?>
       <?php else : ?>
-        <form action="./secrets" method="post" enctype="multipart/form-data">
+        <form action="./secrets" method="post" enctype="multipart/form-data" id="publish-form">
           <div class="card" id="publish">
             <div class="card-content">
               <textarea class="post-textarea" placeholder="What's your problem?" id="content" name="content"></textarea>
@@ -113,6 +113,58 @@ use Secra\Models\Secret;
 <script src="./scripts/utils.js"></script>
 <script src="./scripts/attitudes.min.js"></script>
 <script>
+    function publishSecret(event) {
+        event.preventDefault();
+        const formEl = document.getElementById("publish-form");
+        const content = formEl.querySelector("#content").value;
+        const nickname = formEl.querySelector("#nickname").value;
+        // const imageInputEl = formEl.querySelector("#image-input");
+        // const images = imageInputEl.files;
+        const formData = new FormData();
+        formData.append("content", content);
+        formData.append("nickname", nickname);
+        // for (let i = 0; i < images.length; i++) {
+        //     formData.append("images[]", images[i], images[i].name);
+        // }
+        fetch("./secrets", {
+            method: "POST",
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+            }
+        })
+            .then(response => {
+                switch (response.status) {
+                    case 201:
+                        return response.json();
+                    case 401:
+                        alert("请先登录");
+                        window.location.href = "./users/login";
+                        break;
+                    default:
+                        return response.json().then(data => {
+                            throw new Error(data.message);
+                        });
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    refresh();
+                    formEl.querySelector("#content").value = "";
+                    formEl.querySelector("#nickname").value = "";
+                    imageInputEl.value = "";
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    const publishFormEl = document.getElementById("publish-form");
+    publishFormEl.addEventListener("submit", publishSecret);
+
     function refresh() {
         fetch("./secrets")
             .then(response => response.text())

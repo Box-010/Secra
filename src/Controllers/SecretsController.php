@@ -8,6 +8,7 @@ use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
+use Secra\Arch\Router\Attributes\Header;
 use Secra\Arch\Router\Attributes\Param;
 use Secra\Arch\Router\Attributes\Pipes;
 use Secra\Arch\Router\Attributes\Post;
@@ -59,32 +60,85 @@ class SecretsController extends BaseController
     }
   }
 
-  #[Post]
-  public function createSecret(
-    #[FormData("content")] string              $content,
-    #[FormData("nickname", false)] string|null $nickname = null
-  ): void
+  private function createSecretJson(string $content, ?string $nickname): void
   {
-    if (empty($content)) {
-      echo "Content cannot be empty";
-      $this->redirectDelay('/', 3);
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->json(
+        ["success" => false, "message" => "You must be logged in to publish a secret"],
+        401
+      );
       return;
     }
-    if (!$this->sessionService->isUserLoggedIn()) {
-      $this->redirect("/login");
+    if (empty($content)) {
+      $this->json(
+        ["success" => false, "message" => "Content cannot be empty"],
+        400
+      );
       return;
     }
     $encoded_content = htmlentities($content, ENT_QUOTES);
     $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
-    $secret = new Secret;
+    $secret = new Secret();
     $secret->author_id = $this->sessionService->getCurrentUser()->user_id;
     $secret->content = $encoded_content;
     $secret->nickname = $encoded_nickname;
     if ($secret = $this->secretsRepository->save($secret)) {
-      $this->redirect("/secrets/{$secret->post_id}");
+      $this->json(
+        [
+          "success" => true,
+          "message" => "Secret saved successfully",
+          "data" => [
+            "secret" => $secret
+          ]
+        ],
+        201
+      );
     } else {
-      echo "Failed to save secret";
-      $this->redirectDelay('/', 3);
+      $this->json(
+        ["success" => false, "message" => "Failed to publish secret"],
+        500
+      );
+    }
+  }
+
+  private function createSecretHtml(string $content, ?string $nickname): void
+  {
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->redirectDelay(PUBLIC_ROOT . "users/login", 3);
+      echo "You must be logged in to publish a secret";
+      return;
+    }
+    $referer = $_SERVER['HTTP_REFERER'];
+    if (empty($content)) {
+      $this->redirectDelay($referer, 3);
+      echo "Content cannot be empty";
+      return;
+    }
+    $encoded_content = htmlentities($content, ENT_QUOTES);
+    $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
+    $secret = new Secret();
+    $secret->author_id = $this->sessionService->getCurrentUser()->user_id;
+    $secret->content = $encoded_content;
+    $secret->nickname = $encoded_nickname;
+    if ($secret = $this->secretsRepository->save($secret)) {
+      $this->redirect(PUBLIC_ROOT . "secrets/{$secret->post_id}");
+    } else {
+      $this->redirectDelay($referer, 3);
+      echo "Failed to publish secret";
+    }
+  }
+
+  #[Post]
+  public function createSecret(
+    #[Header('Accept')] string|null            $accept,
+    #[FormData("content")] string              $content,
+    #[FormData("nickname", false)] string|null $nickname = null,
+  ): void
+  {
+    if ($accept === "application/json") {
+      $this->createSecretJson($content, $nickname);
+    } else {
+      $this->createSecretHtml($content, $nickname);
     }
   }
 }

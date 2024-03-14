@@ -1,8 +1,12 @@
 <?php
+
 /**
  * @var callable(string, array): string $render
  * @var bool $isLoggedIn
+ * @var User $currentUser
  */
+
+use Secra\Models\User;
 
 ?>
 <!DOCTYPE html>
@@ -41,64 +45,66 @@
         </div>
       </div>
 
-      <div class="item-list">
-        <div class="card item-card">
-          <div class="card-content">
-            <div class="item-info-text">#4 2024/03/01 11:45:14</div>
-            <p>大家好啊我是说的道理，今天来点大家想看的东西啊</p>
+      <div class="item-list-container">
+        <div class="item-list">
+          <div class="card item-card">
+            <div class="card-content">
+              <div class="item-info-text">#4 2024/03/01 11:45:14</div>
+              <p>大家好啊我是说的道理，今天来点大家想看的东西啊</p>
+            </div>
+            <div class="card-actions">
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_up </span>
+              </button>
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_down </span>
+              </button>
+              <button class="button button-icon">
+                  <span class="icon material-symbols-outlined">
+                    chat_bubble
+                  </span>
+              </button>
+            </div>
           </div>
-          <div class="card-actions">
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_up </span>
-            </button>
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_down </span>
-            </button>
-            <button class="button button-icon">
-                <span class="icon material-symbols-outlined">
-                  chat_bubble
-                </span>
-            </button>
-          </div>
-        </div>
 
-        <div class="card item-card">
-          <div class="card-content">
-            <div class="item-info-text">#2 2024/03/01 11:45:14</div>
-            <p>芝士雪豹</p>
+          <div class="card item-card">
+            <div class="card-content">
+              <div class="item-info-text">#2 2024/03/01 11:45:14</div>
+              <p>芝士雪豹</p>
+            </div>
+            <div class="card-actions">
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_up </span>
+              </button>
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_down </span>
+              </button>
+              <button class="button button-icon">
+                  <span class="icon material-symbols-outlined">
+                    chat_bubble
+                  </span>
+              </button>
+            </div>
           </div>
-          <div class="card-actions">
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_up </span>
-            </button>
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_down </span>
-            </button>
-            <button class="button button-icon">
-                <span class="icon material-symbols-outlined">
-                  chat_bubble
-                </span>
-            </button>
-          </div>
-        </div>
 
-        <div class="card item-card">
-          <div class="card-content">
-            <div class="item-info-text">#1 2024/03/01 11:45:14</div>
-            <p>芝士雪豹</p>
-          </div>
-          <div class="card-actions">
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_up </span>
-            </button>
-            <button class="button button-icon">
-              <span class="icon material-symbols-outlined"> thumb_down </span>
-            </button>
-            <button class="button button-icon">
-                <span class="icon material-symbols-outlined">
-                  chat_bubble
-                </span>
-            </button>
+          <div class="card item-card">
+            <div class="card-content">
+              <div class="item-info-text">#1 2024/03/01 11:45:14</div>
+              <p>芝士雪豹</p>
+            </div>
+            <div class="card-actions">
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_up </span>
+              </button>
+              <button class="button button-icon">
+                <span class="icon material-symbols-outlined"> thumb_down </span>
+              </button>
+              <button class="button button-icon">
+                  <span class="icon material-symbols-outlined">
+                    chat_bubble
+                  </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

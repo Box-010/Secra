@@ -10,6 +10,7 @@ use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\Attributes\Post;
+use Secra\Arch\Router\BaseController;
 use Secra\Models\User;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
@@ -18,7 +19,7 @@ use Secra\Services\SessionService;
 #[Provide(UsersController::class)]
 #[Singleton]
 #[Controller('/users')]
-class UsersController
+class UsersController extends BaseController
 {
   #[Inject] private UserRepository $userRepository;
   #[Inject] private SessionService $sessionService;
@@ -69,9 +70,9 @@ class UsersController
   {
     if ($error) {
       $error = urlencode($error);
-      header("Location: {$location}?error={$error}");
+      $this->redirect("$location?error=$error");
     } else {
-      header("Location: {$location}");
+      $this->redirect($location);
     }
   }
 

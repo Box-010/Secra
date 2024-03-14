@@ -8,7 +8,9 @@ use Secra\Arch\Logger\FileLogger;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Logger\LogLevel;
 use Secra\Arch\Router\Router;
+use Secra\Arch\Template\TemplateEngine;
 use Secra\Database;
+use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\SessionRepository;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
@@ -42,4 +44,20 @@ $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
 
 $sessionService = $container->get(SessionService::class);
 
-$router->route($_GET["route"], $_SERVER['REQUEST_METHOD']);
+$container->set(TemplateEngine::class, function () use ($sessionService) {
+  return new TemplateEngine(
+    __DIR__,
+    [
+      "isLoggedIn" => function () use ($sessionService) {
+        return $sessionService->isUserLoggedIn();
+      },
+      "currentUser" => function () use ($sessionService) {
+        return $sessionService->getCurrentUser();
+      },
+    ]
+  );
+});
+
+$routeStr = $_GET["route"] ?? "";
+
+$router->route($routeStr, $_SERVER['REQUEST_METHOD']);

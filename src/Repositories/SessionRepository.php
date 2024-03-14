@@ -20,14 +20,22 @@ class SessionRepository extends BaseRepository
     return $stmt->fetch();
   }
 
-  public function save(Session $session): void
+  /**
+   * @param Session $session The session to save
+   * @return Session|false Returns the saved session if it was saved successfully, otherwise false
+   */
+  public function save(Session $session): Session|false
   {
-    $this->db->query('INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)', [
+    $stmt = $this->db->query('INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)', [
       $session->session_id,
       $session->user_id,
       // $session->issued_at,
       $session->expires_at,
     ]);
+    if ($stmt->rowCount() > 0) {
+      return $this->getSessionById($session->session_id);
+    }
+    return false;
   }
 
   public function update(Session $session): void

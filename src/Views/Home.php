@@ -117,17 +117,21 @@ use Secra\Models\Secret;
         </div>
       </div>
 
-      <div class="item-list" id="secret-list">
-        <?php
-        foreach ($secrets as $secret) {
-          echo $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
-        }
-        ?>
-      </div>
+      <?php if (count($secrets) > 0) : ?>
+        <div class="item-list" id="secret-list">
+          <?php
+          foreach ($secrets as $secret) {
+            echo $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
+          }
+          ?>
+        </div>
+      <?php else : ?>
+        <?= $render('Components/EmptyTip') ?>
+      <?php endif; ?>
     </div>
   </div>
 
-  <?php if (!$isLoggedIn) : ?>
+  <?php if ($isLoggedIn) : ?>
     <a class="button button-fab" id="publish-fab" href="/publish">
       <span class="icon material-symbols-outlined"> edit </span>
       <span class="button-fab-text">发布</span>

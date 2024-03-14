@@ -134,9 +134,7 @@ use Secra\Models\Secret;
     </a>
   <?php endif; ?>
 </main>
-<footer class="footer">
-  Copyright © 2024 Secra | Made with ♥️ by HuanChengFly
-</footer>
+<?= $render('Components/Footer') ?>
 
 <script src="./scripts/polyfill.min.js"></script>
 <script src="./scripts/cross-fetch.js"></script>

@@ -1,6 +1,6 @@
 <?php
 /**
- * @var callable $render
+ * @var callable(string, array): string $render
  * @var bool $isLoggedIn
  * @var Secret $secret
  */
@@ -123,9 +123,7 @@ use Secra\Models\Secret;
     </div>
   </div>
 </main>
-<footer class="footer">
-  Copyright © 2024 Secra | Made with ♥️ by HuanChengFly
-</footer>
+<?= $render('Components/Footer') ?>
 
 <script src="/scripts/input.js"></script>
 </body>

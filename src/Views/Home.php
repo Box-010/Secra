@@ -85,15 +85,14 @@ use Secra\Models\Secret;
         </div>
       </div>
 
-      <?php if (count($secrets) > 0) : ?>
-        <div class="item-list" id="secret-list">
-          <?php
-          foreach ($secrets as $secret) {
-            echo $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
-          }
-          ?>
-        </div>
-      <?php else : ?>
+      <div class="item-list" id="secret-list">
+        <?php
+        foreach ($secrets as $secret) {
+          echo $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
+        }
+        ?>
+      </div>
+      <?php if (count($secrets) === 0) : ?>
         <?= $render('Components/EmptyTip') ?>
       <?php endif; ?>
     </div>
@@ -115,7 +114,7 @@ use Secra\Models\Secret;
 <script src="./scripts/attitudes.min.js"></script>
 <script>
     function refresh() {
-        fetch("secrets")
+        fetch("./secrets")
             .then(response => response.text())
             .then(secretsHtml => {
                 const itemListEl = document.getElementById("secret-list");

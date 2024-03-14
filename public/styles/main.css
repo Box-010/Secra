@@ -1631,7 +1631,7 @@ a.card {
 }
 
 .login-tip p:last-child {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 .header-welcome {
@@ -1651,4 +1651,10 @@ a.card {
 
 .insert-image input {
     display: none;
+}
+
+.empty-tip {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--theme-text-color-hint);
 }

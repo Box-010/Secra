@@ -10,7 +10,7 @@ use Secra\Models\Secret;
 
 $cardTag = $link ? 'a' : 'div';
 ?>
-<<?= $cardTag ?> class="card item-card"<?php if ($link) : ?> href="/secrets/<?= $secret->post_id ?>"<?php endif; ?>>
+<<?= $cardTag ?> class="card item-card"<?php if ($link) : ?> href="./secrets/<?= $secret->post_id ?>"<?php endif; ?>>
 <div class="card-content">
   <div class="item-info">
     <div class="item-info-text">#<?= $secret->post_id ?></div>

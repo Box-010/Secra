@@ -498,7 +498,6 @@ a.card {
     margin-left: 16px;
 }
 
-.textfield input:autofill,
 .textfield input:-webkit-autofill {
     background-color: transparent !important;
     color: var(--theme-text-color) !important;
@@ -1633,4 +1632,23 @@ a.card {
 
 .login-tip p:last-child {
     margin-bottom: 0px;
+}
+
+.header-welcome {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.welcome-title {
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+.welcome-subtitle {
+    font-size: 1.2em;
+}
+
+.insert-image input {
+    display: none;
 }

@@ -54,6 +54,6 @@ class HomeController extends BaseController
   #[Get('publish')]
   public function publishPage(): void
   {
-    include_once(dirname(__DIR__) . '/Views/publish.php');
+    $this->templateEngine->render('Views/Publish');
   }
 }

@@ -1,6 +1,7 @@
 <?php
 require_once(dirname(__DIR__) . '/config/admin.php');
 require_once(dirname(__DIR__) . '/config/database.php');
+require_once(dirname(__DIR__) . '/config/website.php');
 require_once(__DIR__ . '/autoload.php');
 
 use Secra\Arch\DI\Container;

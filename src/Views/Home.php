@@ -13,32 +13,8 @@ use Secra\Models\Secret;
 <html lang="zh-CN">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <?= $render('Components/HtmlHead') ?>
   <title>隐境 Secra</title>
-  <link rel="stylesheet" href="./styles/normalize.css"/>
-  <link rel="stylesheet" href="./styles/main.css"/>
-  <link rel="stylesheet" href="./styles/material-symbols/index.css"/>
-  <style>
-      .header-welcome {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-      }
-
-      .welcome-title {
-          font-size: 1.8em;
-          font-weight: bold;
-      }
-
-      .welcome-subtitle {
-          font-size: 1.2em;
-      }
-
-      .insert-image input {
-          display: none;
-      }
-  </style>
 </head>
 
 <body>
@@ -56,17 +32,9 @@ use Secra\Models\Secret;
       </div>
 
       <?php if (!$isLoggedIn) : ?>
-        <div class="card login-tip" id="login-tip">
-          <img src="./images/undraw_things_to_say.svg" alt="Things to say" class="login-tip-image"/>
-          <h3>加入隐境，畅享心灵自由之地</h3>
-          <p class="text-secondary">注册或登录后，即可发布秘语</p>
-          <a href="/users/register" class="button button-tonal"> 立即注册 </a>
-          <p class="caption">
-            已有账号？<a href="/users/login" class="link">立即登录</a>
-          </p>
-        </div>
+        <?= $render('Components/LoginCard') ?>
       <?php else : ?>
-        <form action="/secrets" method="post" enctype="multipart/form-data">
+        <form action="./secrets" method="post" enctype="multipart/form-data">
           <div class="card" id="publish">
             <div class="card-content">
               <textarea class="post-textarea" placeholder="What's your problem?" id="content" name="content"></textarea>
@@ -132,7 +100,7 @@ use Secra\Models\Secret;
   </div>
 
   <?php if ($isLoggedIn) : ?>
-    <a class="button button-fab" id="publish-fab" href="/publish">
+    <a class="button button-fab" id="publish-fab" href="./publish">
       <span class="icon material-symbols-outlined"> edit </span>
       <span class="button-fab-text">发布</span>
     </a>

@@ -28,7 +28,7 @@ class UsersController extends BaseController
   #[Get('register')]
   public function registerPage(): void
   {
-    include(dirname(__DIR__) . '/Views/users/register.php');
+    $this->templateEngine->render('Views/Users/Register');
   }
 
   #[Post('register')]
@@ -37,7 +37,7 @@ class UsersController extends BaseController
     $redirect = $_POST['redirect'] ?? '/';
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
     if (!$email) {
-      $this->location('/users/register', 'Invalid email');
+      $this->location(PUBLIC_ROOT . 'users/register', 'Invalid email');
       return;
     }
 
@@ -79,7 +79,7 @@ class UsersController extends BaseController
   #[Get('login')]
   public function loginPage(): void
   {
-    include(dirname(__DIR__) . '/Views/users/login.php');
+    $this->templateEngine->render('Views/Users/Login');
   }
 
   #[Post('login')]
@@ -106,13 +106,13 @@ class UsersController extends BaseController
   #[Get('forgot-password')]
   public function forgotPasswordPage(): void
   {
-    include(dirname(__DIR__) . '/Views/users/forgot-password.php');
+    $this->templateEngine->render('Views/Users/ForgotPassword');
   }
 
   #[Get('me')]
   public function me(): void
   {
-    include(dirname(__DIR__) . '/Views/users/me.php');
+    $this->templateEngine->render('Views/Users/Me');
   }
 
   private function get_pdo_exception_message(PDOException $e): string

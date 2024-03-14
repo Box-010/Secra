@@ -12,27 +12,23 @@ use Secra\Models\Secret;
 <html lang="zh-CN">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <?= $render('Components/HtmlHead') ?>
   <title>秘语详情 | 隐境 Secra</title>
-  <link rel="stylesheet" href="/styles/normalize.css"/>
-  <link rel="stylesheet" href="/styles/main.css"/>
-  <link rel="stylesheet" href="/styles/material-symbols/index.css"/>
 </head>
 
 <body>
 <header class="header">
-  <a class="button button-icon" href="/">
+  <a class="button button-icon" href="./">
     <span class="icon material-symbols-outlined"> arrow_back </span>
   </a>
   <span class="header-title">秘语详情</span>
   <div class="spacer"></div>
   <?php if ($isLoggedIn) : ?>
-    <a class="button button-icon" href="/users/me" id="logged-in">
+    <a class="button button-icon" href="./users/me" id="logged-in">
       <span class="icon material-symbols-outlined"> account_circle </span>
     </a>
   <?php else : ?>
-    <a class="button button-tonal" href="/users/login" id="not-logged-in">
+    <a class="button button-tonal" href="./users/login" id="not-logged-in">
       <span class="material-symbols-outlined"> login </span>
       登录
     </a>
@@ -44,7 +40,7 @@ use Secra\Models\Secret;
       <?= $render('Components/SecretCard', ['secret' => $secret, 'link' => false, 'showCommentBtn' => false]) ?>
 
       <?php if (!$isLoggedIn) : ?>
-        <?php include(dirname(__DIR__) . '/Components/LoginCard.php'); ?>
+        <?= $render('Components/LoginCard') ?>
       <?php else : ?>
         <div class="card" id="reply">
           <div class="card-content">
@@ -125,7 +121,7 @@ use Secra\Models\Secret;
 </main>
 <?= $render('Components/Footer') ?>
 
-<script src="/scripts/input.js"></script>
+<script src="./scripts/input.js"></script>
 </body>
 
 </html>

@@ -37,7 +37,7 @@ use Secra\Arch\Router\Pipes\Pipe;
 #[Singleton]
 class Router
 {
-  private array $controllers = [];
+  private array $controllers;
   private array $basePathMap = [];
 
   /**
@@ -49,6 +49,17 @@ class Router
    * @var Route[][]
    */
   private array $postRoutes = [];
+
+
+  /**
+   * @var Route[][]
+   */
+  private array $putRoutes = [];
+
+  /**
+   * @var Route[][]
+   */
+  private array $deleteRoutes = [];
 
   // 静态路由表，basePath => filePath
   // 静态路由用于指向静态资源，例如图片、CSS、JS 等
@@ -204,13 +215,32 @@ class Router
     $this->globalErrorHandler = $handler;
   }
 
+  private function getRoutes($method): array
+  {
+    if ($method === 'GET') {
+      return $this->getRoutes;
+    } else if ($method === 'POST') {
+      return $this->postRoutes;
+    } else if ($method === 'PUT') {
+      return $this->putRoutes;
+    } else if ($method === 'DELETE') {
+      return $this->deleteRoutes;
+    }
+    throw new Exception('Unsupported method');
+  }
+
   public function route($path, $method): void
   {
     if ($method === 'GET' && $this->handleStaticRoute($path)) {
       return;
     }
+    if ($method === 'POST') {
+      if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+        $method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+      }
+    }
     $matched = false;
-    $routes = $method === 'GET' ? $this->getRoutes : $this->postRoutes;
+    $routes = $this->getRoutes($method);
     foreach ($this->basePathMap as $controller => $basePath) {
       if (!isset($routes[$controller])) {
         continue;
@@ -229,7 +259,7 @@ class Router
               $val = $this->resolveParameter($parameter, $matchResult);
               if ($pipesAttribute = getAttribute($parameter, Pipes::class)) {
                 $pipes = $pipesAttribute->pipes;
-                $val = $this->transformParameter($val, $pipes);
+                $val = $this->transformParameter($val, $pipes, $parameter->name);
               }
               return $val;
             }, $method->getParameters());
@@ -329,10 +359,12 @@ class Router
    *
    * @param mixed $originVal
    * @param array<class-string<Pipe> | Pipe> $pipes
+   * @param string $paramName
    */
   private function transformParameter(
-    mixed $originVal,
-    array $pipes,
+    mixed  $originVal,
+    array  $pipes,
+    string $paramName
   )
   {
     $val = $originVal;
@@ -343,7 +375,7 @@ class Router
       try {
         $val = $pipe->transform($val);
       } catch (Exception $e) {
-        throw new Exception("Failed to transform parameter through pipe: " . $e->getMessage());
+        throw new Exception("Failed to transform parameter $paramName through pipe: " . $e->getMessage());
       }
     }
     return $val;

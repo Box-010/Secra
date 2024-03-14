@@ -121,6 +121,7 @@ use Secra\Models\Secret;
 </main>
 <?= $render('Components/Footer') ?>
 
+<script src="./scripts/attitudes.min.js"></script>
 <script src="./scripts/input.js"></script>
 </body>
 

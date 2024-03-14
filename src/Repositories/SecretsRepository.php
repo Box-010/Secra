@@ -3,15 +3,35 @@
 namespace Secra\Repositories;
 
 use PDO;
+use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Constants\AttitudeableType;
 use Secra\Constants\SecretsOrderColumn;
 use Secra\Models\Secret;
+use Secra\Services\SessionService;
 
 #[Provide(SecretsRepository::class)]
 #[Singleton]
 class SecretsRepository extends BaseRepository
 {
+  #[Inject] private AttitudesRepository $attitudesRepository;
+  #[Inject] private SessionService $sessionService;
+
+  private function resolveSecretsAttitudeStatus(array $secrets): array
+  {
+    return array_map(fn(Secret $secret) => $this->resolveSecretAttitudeStatus($secret), $secrets);
+  }
+
+  private function resolveSecretAttitudeStatus(Secret $secret): Secret
+  {
+    if ($this->sessionService->isUserLoggedIn()) {
+      $userId = $this->sessionService->getCurrentSession()->user_id;
+      $secret->user_attitude = $this->attitudesRepository->queryUserAttitude(AttitudeableType::SECRETS, $secret->post_id, $userId);
+    }
+    return $secret;
+  }
+
   /**
    * @param SecretsOrderColumn $orderBy Order by column
    * @param bool $desc Is descending order
@@ -29,9 +49,9 @@ class SecretsRepository extends BaseRepository
     $order = $desc ? 'DESC' : 'ASC';
     $stmt = $this->db->query("SELECT
       posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-    (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-    (SELECT COUNT(*) FROM likes WHERE likes.likeable_type = 'posts' AND likes.like_type = 'like' AND likes.likeable_id = posts.post_id) AS like_count,
-    (SELECT COUNT(*) FROM likes WHERE likes.likeable_type = 'posts' AND likes.like_type = 'dislike' AND likes.likeable_id = posts.post_id) AS dislike_count
+      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
     FROM posts
     INNER JOIN users u on posts.author_id = u.user_id
     ORDER BY {$orderBy->value} $order
@@ -41,7 +61,9 @@ class SecretsRepository extends BaseRepository
       return [];
     }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
-    return $stmt->fetchAll();
+    $secrets = $stmt->fetchAll();
+
+    return $this->resolveSecretsAttitudeStatus($secrets);
   }
 
   /**
@@ -53,15 +75,19 @@ class SecretsRepository extends BaseRepository
     $stmt = $this->db->query("SELECT
       posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
     (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-    (SELECT COUNT(*) FROM likes WHERE likes.likeable_type = 'posts' AND likes.like_type = 'like' AND likes.likeable_id = posts.post_id) AS like_count,
-    (SELECT COUNT(*) FROM likes WHERE likes.likeable_type = 'posts' AND likes.like_type = 'dislike' AND likes.likeable_id = posts.post_id) AS dislike_count
+    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
+    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
     FROM posts
     INNER JOIN secra.users u on posts.author_id = u.user_id
     WHERE post_id = :id", [
       'id' => $id
     ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to get secret by ID: ' . $this->db->lastError()->getMessage());
+      return false;
+    }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
-    return $stmt->fetch();
+    return $this->resolveSecretAttitudeStatus($stmt->fetch());
   }
 
   /**

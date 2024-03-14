@@ -6,6 +6,7 @@
  * @var bool $showCommentBtn
  */
 
+use Secra\Constants\AttitudeType;
 use Secra\Models\Secret;
 
 $cardTag = $link ? 'a' : 'div';
@@ -25,20 +26,28 @@ $cardTag = $link ? 'a' : 'div';
   </div>
 </div>
 <div class="card-actions">
-  <button class="button button-icon">
+  <button class="button attitude-button" data-attitude-type="positive" data-attitudeable-type="secrets"
+          data-attitudeable-id="<?= $secret->post_id ?>" data-count="<?= $secret->positive_count ?>"
+          data-attituded="<?= $secret->user_attitude === AttitudeType::POSITIVE ? 1 : 0 ?>">
     <span class="icon material-symbols-outlined"> thumb_up </span>
-    <?php if ($secret->like_count) : ?>
-      <?= $secret->like_count ?>
+    <span class="attitude-button-count">
+    <?php if ($secret->positive_count) : ?>
+      <?= $secret->positive_count ?>
     <?php endif; ?>
+    </span>
   </button>
-  <button class="button button-icon">
+  <button class="button attitude-button" data-attitude-type="negative" data-attitudeable-type="secrets"
+          data-attitudeable-id="<?= $secret->post_id ?>" data-count="<?= $secret->negative_count ?>"
+          data-attituded="<?= $secret->user_attitude === AttitudeType::NEGATIVE ? 1 : 0 ?>">
     <span class="icon material-symbols-outlined"> thumb_down </span>
-    <?php if ($secret->dislike_count) : ?>
-      <?= $secret->dislike_count ?>
+    <span class="attitude-button-count">
+    <?php if ($secret->negative_count) : ?>
+      <?= $secret->negative_count ?>
     <?php endif; ?>
+    </span>
   </button>
   <?php if ($showCommentBtn) : ?>
-    <button class="button button-icon">
+    <button class="button">
     <span class="icon material-symbols-outlined">
       chat_bubble
     </span>

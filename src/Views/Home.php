@@ -112,6 +112,7 @@ use Secra\Models\Secret;
 <script src="./scripts/cross-fetch.js"></script>
 <script src="./scripts/input.js"></script>
 <script src="./scripts/utils.js"></script>
+<script src="./scripts/attitudes.min.js"></script>
 <script>
     function refresh() {
         fetch("secrets")
@@ -119,6 +120,7 @@ use Secra\Models\Secret;
             .then(secretsHtml => {
                 const itemListEl = document.getElementById("secret-list");
                 itemListEl.innerHTML = secretsHtml;
+                window.initAttitudes();
             });
     }
 

@@ -11,6 +11,7 @@ use Secra\Arch\Logger\LogLevel;
 use Secra\Arch\Router\Router;
 use Secra\Arch\Template\TemplateEngine;
 use Secra\Database;
+use Secra\Repositories\AttitudesRepository;
 use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\SessionRepository;
 use Secra\Repositories\UserRepository;
@@ -31,6 +32,7 @@ $container->registerAll(
   SessionRepository::class,
   UserRepository::class,
   SecretsRepository::class,
+  AttitudesRepository::class,
   SessionService::class,
   Router::class
 );

@@ -187,18 +187,18 @@ try {
 }
 
 try {
-  $sql = "CREATE TABLE IF NOT EXISTS likes (
-    like_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  $sql = "CREATE TABLE IF NOT EXISTS attitudes (
+    attitude_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED,
-    likeable_type VARCHAR(20) NOT NULL,
-    likeable_id INT UNSIGNED NOT NULL,
-    like_type ENUM('like', 'dislike') NOT NULL DEFAULT 'like',
+    attitudeable_type VARCHAR(20) NOT NULL,
+    attitudeable_id INT UNSIGNED NOT NULL,
+    attitude_type ENUM('positive', 'negative') NOT NULL DEFAULT 'positive',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY (user_id, likeable_type, likeable_id),
+    UNIQUE KEY (user_id, attitudeable_type, attitudeable_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
   );";
   $conn->exec($sql);
-  echo "Table likes created successfully<br>";
+  echo "Table attitudes created successfully<br>";
 } catch (PDOException $e) {
   echo $sql . "<br>" . $e->getMessage();
   exit;

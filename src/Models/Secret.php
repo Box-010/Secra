@@ -2,6 +2,8 @@
 
 namespace Secra\Models;
 
+use Secra\Constants\AttitudeType;
+
 class Secret
 {
   public int $post_id;
@@ -13,8 +15,9 @@ class Secret
   public string $created_at;
   public string $updated_at;
   public int $comment_count;
-  public int $like_count;
-  public int $dislike_count;
+  public int $positive_count;
+  public int $negative_count;
+  public ?AttitudeType $user_attitude;
 
   public function __set($name, $value)
   {

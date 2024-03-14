@@ -26,6 +26,12 @@ define('ADMIN_PASSWORD', /* Your admin user password */);
 define('ADMIN_EMAIL', /* Your admin user email */);
 ```
 
+```php
+<?php
+/* config/website.php */
+const PUBLIC_ROOT = "/"; // The root path which will be used to access the application in the browser, usually it is just '/' 
+```
+
 ## Enabling mod_rewrite
 
 You need also enable `mod_rewrite` in your Apache server. You can do this by running the following command:
@@ -56,7 +62,9 @@ to
 
 ## Setting up the server
 
-You need to edit the file `/etc/apache2/sites-available/000-default.conf` to change the `DocumentRoot` to the path of the `public` folder of the application. For example, if you have cloned the repository in `/var/www/html/secra`, you need to change the following:
+You need to edit the file `/etc/apache2/sites-available/000-default.conf` to change the `DocumentRoot` to the path of
+the `public` folder of the application. For example, if you have cloned the repository in `/var/www/html/secra`, you
+need to change the following:
 
 ```apache
 <VirtualHost *:80>

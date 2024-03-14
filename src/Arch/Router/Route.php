@@ -17,15 +17,17 @@ class Route
   {
   }
 
-  // 生成匹配路径的正则表达式，头尾匹配
-
-  public function match($path)
+  /**
+   * @param string $path
+   * @return MatchResult
+   */
+  public function match(string $path): MatchResult
   {
     if ($path === '') {
       if ($this->fullPath === '') {
-        return new MatchResult(true, []);
+        return new MatchResult($this, true, []);
       }
-      return new MatchResult(false, []);
+      return new MatchResult($this, false, []);
     }
     $regex = $this->generateRegex();
     $isMatch = preg_match($regex, $path, $matches);
@@ -36,9 +38,9 @@ class Route
           $params[$pathPatternItem->dynamicParam->name] = $matches[$pathPatternItem->dynamicParam->index + 1];
         }
       }
-      return new MatchResult(true, $params);
+      return new MatchResult($this, true, $params);
     }
-    return new MatchResult(false, []);
+    return new MatchResult($this, false, []);
   }
 
   private function generateRegex()

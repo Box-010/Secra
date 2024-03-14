@@ -13,7 +13,7 @@ use Attribute;
 #[Attribute]
 class Get
 {
-  public function __construct(public string $path)
+  public function __construct(public string $path = '')
   {
   }
 }

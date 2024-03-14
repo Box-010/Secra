@@ -7,6 +7,7 @@ require_once(dirname(dirname(__DIR__)) . '/Utils/Reflection.php');
 use Closure;
 use Exception;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Secra\Arch\DI\Attributes\Inject;
@@ -17,15 +18,19 @@ use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Cookie;
 use Secra\Arch\Router\Attributes\ErrorHandler;
+use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\Attributes\Header;
 use Secra\Arch\Router\Attributes\HttpMethod;
 use Secra\Arch\Router\Attributes\IP;
 use Secra\Arch\Router\Attributes\Param;
+use Secra\Arch\Router\Attributes\Pipes;
 use Secra\Arch\Router\Attributes\Post;
+use Secra\Arch\Router\Attributes\Query;
 use Secra\Arch\Router\Models\MatchResult;
 use Secra\Arch\Router\Models\PathDynamicParam;
 use Secra\Arch\Router\Models\PathPatternItem;
+use Secra\Arch\Router\Pipes\Pipe;
 
 
 #[Provide(Router::class)]
@@ -35,8 +40,14 @@ class Router
   private array $controllers = [];
   private array $basePathMap = [];
 
-  // 路由表，ControllerName => [Route]
+  /**
+   * @var Route[][]
+   */
   private array $getRoutes = [];
+
+  /**
+   * @var Route[][]
+   */
   private array $postRoutes = [];
 
   // 静态路由表，basePath => filePath
@@ -59,14 +70,14 @@ class Router
     }
   }
 
-  private function getControllers()
+  private function getControllers(): array
   {
-    $controllerDir = dirname(dirname(__DIR__)) . '/Controllers';
+    $controllerDir = dirname(__DIR__, 2) . '/Controllers';
     $controllerNamespacePrefix = 'Secra\Controllers' . '\\';
     $controllers = [];
     $files = scandir($controllerDir);
     foreach ($files as $file) {
-      if (strpos($file, '.php') !== false) {
+      if (str_contains($file, '.php')) {
         $controllerName = str_replace('.php', '', $file);
         require_once($controllerDir . '/' . $file);
         $controllers[] = $controllerNamespacePrefix . $controllerName;
@@ -75,17 +86,17 @@ class Router
     return $controllers;
   }
 
-  private function registerController($controller)
+  private function registerController($controller): void
   {
     $reflection = new ReflectionClass($controller);
     $attributes = $reflection->getAttributes(Controller::class);
     if (isset($attributes[0])) {
       $basePath = $attributes[0]->newInstance()->basePath;
-      if (strpos($basePath, '/') !== 0) {
+      if (!str_starts_with($basePath, '/')) {
         throw new Exception('Controller basePath must start with /');
       }
       $basePath = substr($basePath, 1);
-      if (substr($basePath, -1) === '/') {
+      if (str_ends_with($basePath, '/')) {
         $basePath = substr($basePath, 0, -1);
       }
       $this->basePathMap[$controller] = $basePath;
@@ -131,7 +142,7 @@ class Router
     }
   }
 
-  private function registerErrorHandler($controller, $method, $errorClass)
+  private function registerErrorHandler($controller, $method, $errorClass): void
   {
     if (!isset($this->errorHandlers[$controller])) {
       $this->errorHandlers[$controller] = [];
@@ -139,17 +150,17 @@ class Router
     $this->errorHandlers[$controller][$errorClass] = $method;
   }
 
-  private function parsePathPattern($path)
+  private function parsePathPattern($path): array
   {
     $pathPatternItems = [];
     $pathItems = explode('/', $path);
     $dynamicParamIndex = 0;
     foreach ($pathItems as $pathItem) {
-      if (strpos($pathItem, ':') === 0) {
+      if (str_starts_with($pathItem, ':')) {
         $name = substr($pathItem, 1);
         $hasPattern = false;
         $pattern = null;
-        if (strpos($name, '(') !== false) {
+        if (str_contains($name, '(')) {
           $hasPattern = true;
           $pattern = substr($name, strpos($name, '(') + 1, -1);
           $name = substr($name, 0, strpos($name, '('));
@@ -183,18 +194,17 @@ class Router
     * 路径模式中，可能包含动态参数，例如 /user/:userId
     * 动态参数也可以指定一个正则表达式，例如 /user/:userId(\d+)
    */
-
-  public function registerStaticRoute($basePath, $filePath)
+  public function registerStaticRoute($basePath, $filePath): void
   {
     $this->staticRoutes[$basePath] = $filePath;
   }
 
-  public function registerGlobalErrorHandler(Closure $handler)
+  public function registerGlobalErrorHandler(Closure $handler): void
   {
     $this->globalErrorHandler = $handler;
   }
 
-  public function route($path, $method)
+  public function route($path, $method): void
   {
     if ($method === 'GET' && $this->handleStaticRoute($path)) {
       return;
@@ -202,11 +212,11 @@ class Router
     $matched = false;
     $routes = $method === 'GET' ? $this->getRoutes : $this->postRoutes;
     foreach ($this->basePathMap as $controller => $basePath) {
-      if (strpos($path, $basePath) === 0) {
+      if (!isset($routes[$controller])) {
+        continue;
+      }
+      if (str_starts_with($path, $basePath)) {
         $path = substr($path, strlen($basePath));
-        if (!isset($routes[$controller])) {
-          continue;
-        }
         foreach ($routes[$controller] as $route) {
           $matchResult = $route->match($path);
           $this->logger->debug("Matching route: $route->fullPath, result: " . json_encode($matchResult));
@@ -216,7 +226,12 @@ class Router
             $reflection = new ReflectionClass($controller);
             $method = $reflection->getMethod($route->method);
             $parameters = array_map(function (ReflectionParameter $parameter) use ($matchResult) {
-              return $this->resolveParameter($parameter, $matchResult);
+              $val = $this->resolveParameter($parameter, $matchResult);
+              if ($pipesAttribute = getAttribute($parameter, Pipes::class)) {
+                $pipes = $pipesAttribute->pipes;
+                $val = $this->transformParameter($val, $pipes);
+              }
+              return $val;
             }, $method->getParameters());
 
             try {
@@ -231,14 +246,15 @@ class Router
     }
 
     if (!$matched) {
+      http_response_code(404);
       echo '404';
     }
   }
 
-  private function handleStaticRoute($path)
+  private function handleStaticRoute($path): bool
   {
     foreach ($this->staticRoutes as $basePath => $filePath) {
-      if (strpos($path, $basePath) === 0) {
+      if (str_starts_with($path, $basePath)) {
         $filePath = $filePath . substr($path, strlen($basePath));
         if (file_exists($filePath)) {
           header('Content-Type: ' . mime_content_type($filePath));
@@ -250,16 +266,21 @@ class Router
     return false;
   }
 
-  private function resolveParameter(ReflectionParameter $parameter, MatchResult $matchResult)
+  private function resolveParameter(
+    ReflectionParameter $parameter,
+    MatchResult         $matchResult
+  )
   {
+    $paramName = $parameter->getName();
+
     if ($paramAttribute = getAttribute($parameter, Param::class)) {
-      $name = $paramAttribute->name ?? $parameter->getName();
+      $name = $paramAttribute->name ?? $paramName;
       if (!isset($matchResult->params[$name])) {
         throw new Exception('Parameter not resolved');
       }
       return $matchResult->params[$name];
     } else if ($headerAttribute = getAttribute($parameter, Header::class)) {
-      $name = $headerAttribute->name ?? $parameter->getName();
+      $name = $headerAttribute->name ?? $paramName;
       $headers = getallheaders();
       if (!isset($headers[$name])) {
         throw new Exception('Parameter not resolved');
@@ -268,12 +289,64 @@ class Router
     } else if (hasAttribute($parameter, IP::class)) {
       return $this->getIp();
     } else if ($cookieAttribute = getAttribute($parameter, Cookie::class)) {
-      $name = $cookieAttribute->name ?? $parameter->getName();
+      $name = $cookieAttribute->name ?? $paramName;
       return $_COOKIE[$name];
     } else if (hasAttribute($parameter, HttpMethod::class)) {
       return $_SERVER['REQUEST_METHOD'];
+    } else if ($queryAttribute = getAttribute($parameter, Query::class)) {
+      $name = $queryAttribute->name ?? $paramName;
+      if (isset($_GET[$name])) {
+        return $_GET[$name];
+      }
+      try {
+        return $parameter->getDefaultValue();
+      } catch (ReflectionException $e) {
+        if (!$queryAttribute->required) {
+          return null;
+        }
+      }
+    } else if ($formDataAttribute = getAttribute($parameter, FormData::class)) {
+      $name = $formDataAttribute->name ?? $paramName;
+      if (isset($_POST[$name])) {
+        return $_POST[$name];
+      }
+      try {
+        return $parameter->getDefaultValue();
+      } catch (ReflectionException $e) {
+        if (!$formDataAttribute->required) {
+          return null;
+        }
+      }
     }
-    throw new Exception('Parameter not resolved');
+
+    $routeName = $matchResult->route->controller . '::' . $matchResult->route->method;
+
+    throw new Exception("Failed to resolve parameter $paramName when invoking $routeName");
+  }
+
+  /**
+   * Transform parameter value through pipes
+   *
+   * @param mixed $originVal
+   * @param array<class-string<Pipe> | Pipe> $pipes
+   */
+  private function transformParameter(
+    mixed $originVal,
+    array $pipes,
+  )
+  {
+    $val = $originVal;
+    foreach ($pipes as $pipe) {
+      if (is_string($pipe)) {
+        $pipe = new $pipe;
+      }
+      try {
+        $val = $pipe->transform($val);
+      } catch (Exception $e) {
+        throw new Exception("Failed to transform parameter through pipe: " . $e->getMessage());
+      }
+    }
+    return $val;
   }
 
   public function getIp()
@@ -298,7 +371,7 @@ class Router
     }
   }
 
-  private function resolveErrorHandler($error, $controller, $matchResult)
+  private function resolveErrorHandler($error, $controller, $matchResult): void
   {
     if (!isset($this->errorHandlers[$controller])) {
       if ($this->globalErrorHandler) {

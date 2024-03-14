@@ -8,10 +8,10 @@ use Attribute;
 #[Attribute]
 class Provide
 {
-  public string $class;
-
-  public function __construct(string $class)
+  /**
+   * @param class-string $class
+   */
+  public function __construct(public string $class)
   {
-    $this->class = $class;
   }
 }

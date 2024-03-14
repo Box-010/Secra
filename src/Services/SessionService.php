@@ -85,7 +85,7 @@ class SessionService
     return $this->sessionRepository->getSessionById($session->session_id);
   }
 
-  public function destoryCurrentSession()
+  public function destroyCurrentSession(): void
   {
     $session_id = $_COOKIE['session_id'] ?? $_SESSION['session_id'] ?? null;
     if ($session_id) {

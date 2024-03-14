@@ -14,13 +14,13 @@ use Secra\Arch\Router\Attributes\Get;
 class HomeController
 {
   #[Get('')]
-  public function index()
+  public function homePage(): void
   {
     include_once(dirname(__DIR__) . '/Views/home.php');
   }
 
   #[Get('publish')]
-  public function publishPage()
+  public function publishPage(): void
   {
     include_once(dirname(__DIR__) . '/Views/publish.php');
   }

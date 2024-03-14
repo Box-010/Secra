@@ -26,13 +26,13 @@ class UsersController extends BaseController
   #[Inject] private ILogger $logger;
 
   #[Get('register')]
-  public function registerPage()
+  public function registerPage(): void
   {
     include(dirname(__DIR__) . '/Views/users/register.php');
   }
 
   #[Post('register')]
-  public function register()
+  public function register(): void
   {
     $redirect = $_POST['redirect'] ?? '/';
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
@@ -66,7 +66,7 @@ class UsersController extends BaseController
     $this->location($redirect);
   }
 
-  private function location(string $location, string|null $error = null)
+  private function location(string $location, string|null $error = null): void
   {
     if ($error) {
       $error = urlencode($error);
@@ -77,13 +77,13 @@ class UsersController extends BaseController
   }
 
   #[Get('login')]
-  public function loginPage()
+  public function loginPage(): void
   {
     include(dirname(__DIR__) . '/Views/users/login.php');
   }
 
   #[Post('login')]
-  public function login()
+  public function login(): void
   {
     $redirect = $_POST['redirect'] ?? '/';
     $user = $this->userRepository->getUserByUsername($_POST['username']);
@@ -97,25 +97,25 @@ class UsersController extends BaseController
   }
 
   #[Get('logout')]
-  public function logout()
+  public function logout(): void
   {
-    $this->sessionService->destoryCurrentSession();
+    $this->sessionService->destroyCurrentSession();
     $this->location('/');
   }
 
   #[Get('forgot-password')]
-  public function forgotPasswordPage()
+  public function forgotPasswordPage(): void
   {
     include(dirname(__DIR__) . '/Views/users/forgot-password.php');
   }
 
   #[Get('me')]
-  public function me()
+  public function me(): void
   {
     include(dirname(__DIR__) . '/Views/users/me.php');
   }
 
-  private function get_pdo_exception_message(PDOException $e)
+  private function get_pdo_exception_message(PDOException $e): string
   {
     $code = $e->getCode();
     if ($code === '23000') {

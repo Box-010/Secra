@@ -24,7 +24,7 @@ class SessionRepository
     return $stmt->fetch();
   }
 
-  public function save(Session $session)
+  public function save(Session $session): void
   {
     $this->db->query('INSERT INTO sessions (session_id, user_id, expires_at) VALUES (?, ?, ?)', [
       $session->session_id,
@@ -34,7 +34,7 @@ class SessionRepository
     ]);
   }
 
-  public function update(Session $session)
+  public function update(Session $session): void
   {
     $this->db->query('UPDATE sessions SET user_id = ?, issued_at = ?, expires_at = ? WHERE session_id = ?', [
       $session->user_id,
@@ -44,7 +44,7 @@ class SessionRepository
     ]);
   }
 
-  public function delete(string $session_id)
+  public function delete(string $session_id): void
   {
     $this->db->query('DELETE FROM sessions WHERE session_id = ?', [$session_id]);
   }

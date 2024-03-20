@@ -66,6 +66,10 @@ body {
         --theme-highlight-color: 255, 255, 255 !important;
         --theme-divider-color: #2e2e2e !important;
     }
+
+    .footer .footer-link {
+        filter: invert(1);
+    }
 }
 
 .text-secondary {

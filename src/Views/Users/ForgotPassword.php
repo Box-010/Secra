@@ -23,22 +23,25 @@
           <div class="card">
             <div class="card-content">
               <h1>忘记密码</h1>
-              <div class="textfield-wrapper">
-                <div class="textfield">
-                    <span class="icon material-symbols-outlined">
-                      email
-                    </span>
-                  <input type="email" id="email" name="email" placeholder="请输入注册时填写的邮箱"
-                         required/>
-                  <label for="username">邮箱</label>
-                </div>
-              </div>
+              <!--              <div class="textfield-wrapper">-->
+              <!--                <div class="textfield">-->
+              <!--                    <span class="icon material-symbols-outlined">-->
+              <!--                      email-->
+              <!--                    </span>-->
+              <!--                  <input type="email" id="email" name="email" placeholder="请输入注册时填写的邮箱"-->
+              <!--                         required/>-->
+              <!--                  <label for="username">邮箱</label>-->
+              <!--                </div>-->
+              <!--              </div>-->
+              <p>
+                请使用注册时填写的邮箱联系管理员重置密码
+              </p>
             </div>
             <div class="card-actions">
               <a href="./users/login" class="button"> 返回登录 </a>
-              <button class="button button-primary" type="submit">
-                提交
-              </button>
+              <!--              <button class="button button-primary" type="submit">-->
+              <!--                提交-->
+              <!--              </button>-->
             </div>
           </div>
         </form>

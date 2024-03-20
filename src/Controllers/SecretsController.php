@@ -55,8 +55,12 @@ class SecretsController extends BaseController
     $offset = ($page - 1) * $pageSize;
     $desc = $order !== "asc";
     $secrets = $this->secretsRepository->getAll($orderBy, $desc, $pageSize, $offset);
+    $secretCount = $this->secretsRepository->countAll();
     foreach ($secrets as $secret) {
       $this->templateEngine->render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
+    }
+    if ($secretCount > $offset + $pageSize) {
+      $this->templateEngine->render('Components/LoadMoreIndicator', ['url' => "./secrets?order_by=" . strtolower($orderBy->name) . "&order={$order}&page_size={$pageSize}&page=" . ($page + 1)]);
     }
   }
 

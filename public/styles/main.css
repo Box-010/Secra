@@ -1526,6 +1526,14 @@ a.card {
     gap: 8px;
 }
 
+.item-list .empty-tip {
+    display: none;
+}
+
+.item-list[data-empty="1"] .empty-tip {
+    display: block;
+}
+
 .item-list-header {
     padding: 16px;
     display: flex;
@@ -1657,4 +1665,15 @@ a.card {
     padding: 32px 16px;
     text-align: center;
     color: var(--theme-text-color-hint);
+}
+
+.load-more-indicator {
+    padding: 16px;
+    text-align: center;
+    color: var(--theme-text-color-hint);
+}
+
+.load-more-indicator .load-more-indicator-text {
+    pointer-events: none;
+    user-select: none;
 }

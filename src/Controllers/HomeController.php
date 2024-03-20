@@ -44,10 +44,13 @@ class HomeController extends BaseController
     $currentUser = $this->sessionService->getCurrentUser();
     $welcomeMessage = $this->getWelcomeMessage($currentUser?->user_name);
     $secrets = $this->secretsRepository->getAll();
+    $secretCount = $this->secretsRepository->countAll();
+    $hasMore = $secretCount > count($secrets);
 
     $this->templateEngine->render('Views/Home', [
       'welcomeMessage' => $welcomeMessage,
       'secrets' => $secrets,
+      'hasMore' => $hasMore
     ]);
   }
 

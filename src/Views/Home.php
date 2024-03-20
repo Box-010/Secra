@@ -4,6 +4,7 @@
  * @var bool $isLoggedIn
  * @var string $welcomeMessage
  * @var Secret[] $secrets
+ * @var bool $hasMore
  */
 
 use Secra\Models\Secret;
@@ -85,16 +86,15 @@ use Secra\Models\Secret;
         </div>
       </div>
 
-      <div class="item-list" id="secret-list">
-        <?php
-        foreach ($secrets as $secret) {
-          echo $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
-        }
-        ?>
-      </div>
-      <?php if (count($secrets) === 0) : ?>
+      <div class="item-list" id="secret-list"<?= empty($secrets) ? ' data-empty="1"' : '' ?>>
+        <?php foreach ($secrets as $secret) : ?>
+          <?= $render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]); ?>
+        <?php endforeach; ?>
+        <?php if ($hasMore) : ?>
+          <?= $render('Components/LoadMoreIndicator', ['url' => "./secrets?page=2"]); ?>
+        <?php endif; ?>
         <?= $render('Components/EmptyTip') ?>
-      <?php endif; ?>
+      </div>
     </div>
   </div>
 
@@ -112,6 +112,7 @@ use Secra\Models\Secret;
 <script src="./scripts/input.js"></script>
 <script src="./scripts/utils.js"></script>
 <script src="./scripts/attitudes.min.js"></script>
+<script src="./scripts/load-more.js"></script>
 <script>
     function publishSecret(event) {
         event.preventDefault();
@@ -172,6 +173,7 @@ use Secra\Models\Secret;
                 const itemListEl = document.getElementById("secret-list");
                 itemListEl.innerHTML = secretsHtml;
                 window.initAttitudes();
+                window.initLoadMore();
             });
     }
 

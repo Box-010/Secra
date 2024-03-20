@@ -20,6 +20,7 @@ use Secra\Constants\SecretsOrderColumn;
 use Secra\Models\Secret;
 use Secra\Pipes\ParseSecretsOrderColumnPipe;
 use Secra\Repositories\SecretsRepository;
+use Secra\Services\PermissionService;
 use Secra\Services\SessionService;
 
 
@@ -30,6 +31,7 @@ class SecretsController extends BaseController
 {
   #[Inject] private SecretsRepository $secretsRepository;
   #[Inject] private SessionService $sessionService;
+  #[Inject] private PermissionService $permissionService;
 
   #[Get(':secretId(\d+)')]
   public function secretDetailPage(#[Param] string $secretId): void
@@ -49,7 +51,7 @@ class SecretsController extends BaseController
       return;
     }
     $secret = $this->secretsRepository->getById($secretId);
-    if ($secret->author_id !== $this->sessionService->getCurrentUser()->user_id) {
+    if (!$this->permissionService->hasRole("admin") && $secret->author_id !== $this->sessionService->getCurrentUser()->user_id) {
       $this->json(
         ["success" => false, "message" => "You are not authorized to delete this secret"],
         403

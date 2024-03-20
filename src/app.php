@@ -15,6 +15,7 @@ use Secra\Repositories\AttitudesRepository;
 use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\SessionRepository;
 use Secra\Repositories\UserRepository;
+use Secra\Services\PermissionService;
 use Secra\Services\SessionService;
 
 ini_set('session.cookie_httponly', '1');
@@ -34,6 +35,7 @@ $container->registerAll(
   SecretsRepository::class,
   AttitudesRepository::class,
   SessionService::class,
+  PermissionService::class,
   Router::class
 );
 
@@ -47,8 +49,9 @@ $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
 });
 
 $sessionService = $container->get(SessionService::class);
+$permissionService = $container->get(PermissionService::class);
 
-$container->set(TemplateEngine::class, function () use ($sessionService) {
+$container->set(TemplateEngine::class, function () use ($sessionService, $permissionService) {
   return new TemplateEngine(
     __DIR__,
     [
@@ -57,6 +60,9 @@ $container->set(TemplateEngine::class, function () use ($sessionService) {
       },
       "currentUser" => function () use ($sessionService) {
         return $sessionService->getCurrentUser();
+      },
+      "isAdmin" => function () use ($permissionService) {
+        return $permissionService->hasRole('admin');
       },
     ]
   );

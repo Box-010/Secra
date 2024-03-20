@@ -5,6 +5,7 @@
  * @var bool $link
  * @var bool $showCommentBtn
  * @var User $currentUser
+ * @var bool $isAdmin
  */
 
 use Secra\Constants\AttitudeType;
@@ -58,16 +59,18 @@ $cardTag = $link ? 'a' : 'div';
       <?php endif; ?>
     </button>
   <?php endif; ?>
-  <?php if ($currentUser->user_id === $secret->author_id) : ?>
+  <?php if ($isAdmin || ($currentUser->user_id === $secret->author_id)) : ?>
     <button class="button button-icon" id="secret-popup-btn-<?= $secret->post_id ?>">
       <span class="icon material-symbols-outlined">
         more_vert
       </span>
     </button>
     <div class="dropdown-menu" data-activator="#secret-popup-btn-<?= $secret->post_id ?>">
-      <div class="dropdown-item" data-action-type="edit-secret" data-action-data="<?= $secret->post_id ?>">
-        编辑
-      </div>
+      <?php if ($currentUser->user_id === $secret->author_id) : ?>
+        <div class="dropdown-item" data-action-type="edit-secret" data-action-data="<?= $secret->post_id ?>">
+          编辑
+        </div>
+      <?php endif; ?>
       <div class="dropdown-item" data-action-type="delete-secret" data-action-data="<?= $secret->post_id ?>">
         删除
       </div>

@@ -37,11 +37,8 @@ class UsersController extends BaseController
   public function register(): void
   {
     $redirect = $_POST['redirect'] ?? '/';
+
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
-    if (!$email) {
-      $this->location(PUBLIC_ROOT . 'users/register', 'Invalid email');
-      return;
-    }
 
     $username = htmlspecialchars($_POST['username']);
 

@@ -38,7 +38,7 @@ $container->registerAll(
 );
 
 $router = $container->get(Router::class);
-$router->registerStaticRoute('/', dirname(__DIR__) . '/public');
+$router->registerStaticRoute('', dirname(__DIR__) . '/public');
 $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
   $logger = $container->get(ILogger::class);
   $logger->error($e->getMessage());
@@ -63,5 +63,10 @@ $container->set(TemplateEngine::class, function () use ($sessionService) {
 });
 
 $routeStr = $_GET["route"] ?? "";
+//$routeStr = rtrim($routeStr, '/');
+//$routeStr = '/' . ltrim($routeStr, '/');
+
+$logger = $container->get(ILogger::class);
+$logger->info("Route: $routeStr");
 
 $router->route($routeStr, $_SERVER['REQUEST_METHOD']);

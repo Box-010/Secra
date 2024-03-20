@@ -281,13 +281,49 @@ class Router
     }
   }
 
+  private function getStaticFileMimeType($filePath): string
+  {
+    if (str_ends_with($filePath, '.css')) {
+      return 'text/css';
+    } else if (str_ends_with($filePath, '.js')) {
+      return 'application/javascript';
+    } else if (str_ends_with($filePath, '.png')) {
+      return 'image/png';
+    } else if (str_ends_with($filePath, '.jpg') || str_ends_with($filePath, '.jpeg')) {
+      return 'image/jpeg';
+    } else if (str_ends_with($filePath, '.gif')) {
+      return 'image/gif';
+    } else if (str_ends_with($filePath, '.svg')) {
+      return 'image/svg+xml';
+    } else if (str_ends_with($filePath, '.ico')) {
+      return 'image/x-icon';
+    } else if (str_ends_with($filePath, '.webp')) {
+      return 'image/webp';
+    } else if (str_ends_with($filePath, '.mp3')) {
+      return 'audio/mpeg';
+    } else if (str_ends_with($filePath, '.mp4')) {
+      return 'video/mp4';
+    } else if (str_ends_with($filePath, '.webm')) {
+      return 'video/webm';
+    } else if (str_ends_with($filePath, '.ogg')) {
+      return 'audio/ogg';
+    } else if (str_ends_with($filePath, '.wav')) {
+      return 'audio/wav';
+    } else if (str_ends_with($filePath, '.flac')) {
+      return 'audio/flac';
+    }
+    return mime_content_type($filePath);
+  }
+
   private function handleStaticRoute($path): bool
   {
     foreach ($this->staticRoutes as $basePath => $filePath) {
       if (str_starts_with($path, $basePath)) {
-        $filePath = $filePath . substr($path, strlen($basePath));
-        if (file_exists($filePath)) {
-          header('Content-Type: ' . mime_content_type($filePath));
+        $filePath = $filePath . '/' . substr($path, strlen($basePath));
+        if (file_exists($filePath) && is_file($filePath)) {
+          $this->logger->info("Static route resolved: $filePath");
+          header('Content-Type: ' . $this->getStaticFileMimeType($filePath));
+          header('X-Resolved-By: Secra');
           readfile($filePath);
           return true;
         }

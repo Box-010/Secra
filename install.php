@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(__DIR__) . '/config/admin.php');
-require_once(dirname(__DIR__) . '/config/database.php');
+require_once(__DIR__ . '/config/admin.php');
+require_once(__DIR__ . '/config/database.php');
 
 // 先创建连接
 try {

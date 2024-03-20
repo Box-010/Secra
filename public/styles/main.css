@@ -1677,3 +1677,27 @@ a.card {
     pointer-events: none;
     user-select: none;
 }
+
+.dropdown-menu {
+    z-index: 10;
+    position: absolute;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: var(--theme-surface-color);
+    border-radius: 6px;
+}
+
+.dropdown-menu:not(.dropdown-menu--active) {
+    display: none;
+}
+
+.dropdown-menu.dropdown-menu--active {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    display: block;
+    text-decoration: none;
+    color: var(--theme-text-color);
+    transition: all 0.2s;
+}

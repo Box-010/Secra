@@ -17,6 +17,7 @@ use Secra\Arch\DI\Container;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Cookie;
+use Secra\Arch\Router\Attributes\Delete;
 use Secra\Arch\Router\Attributes\ErrorHandler;
 use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
@@ -26,6 +27,7 @@ use Secra\Arch\Router\Attributes\IP;
 use Secra\Arch\Router\Attributes\Param;
 use Secra\Arch\Router\Attributes\Pipes;
 use Secra\Arch\Router\Attributes\Post;
+use Secra\Arch\Router\Attributes\Put;
 use Secra\Arch\Router\Attributes\Query;
 use Secra\Arch\Router\Models\MatchResult;
 use Secra\Arch\Router\Models\PathDynamicParam;
@@ -97,6 +99,34 @@ class Router
     return $controllers;
   }
 
+  private function registerRoute(
+    string $httpMethod,
+    string $controller,
+    string $methodName,
+    string $path,
+  ): void
+  {
+    $routes = match ($httpMethod) {
+      'GET' => 'getRoutes',
+      'POST' => 'postRoutes',
+      'PUT' => 'putRoutes',
+      'DELETE' => 'deleteRoutes',
+      default => throw new Exception('Unsupported method'),
+    };
+    if (!isset(($this->$routes)[$controller])) {
+      ($this->$routes)[$controller] = [];
+    }
+    $basePath = $this->basePathMap[$controller];
+    ($this->$routes)[$controller][] = new Route(
+      $controller,
+      $methodName,
+      $basePath,
+      $path,
+      $this->parsePathPattern($path)
+    );
+    $this->logger->debug("Route registered: $httpMethod $path, controller: $controller, pathPattern: " . json_encode($this->parsePathPattern($path)));
+  }
+
   private function registerController($controller): void
   {
     $reflection = new ReflectionClass($controller);
@@ -118,34 +148,14 @@ class Router
         }
         if ($errorHandler = getAttribute($method, ErrorHandler::class)) {
           $this->registerErrorHandler($controller, $method->getName(), $errorHandler->errorClass);
-        } elseif ($getAttribute = getAttribute($method, Get::class)) {
-          $path = $getAttribute->path;
-          $route = new Route(
-            $controller,
-            $method->getName(),
-            $basePath,
-            $path,
-            $this->parsePathPattern($path)
-          );
-          if (!isset($this->getRoutes[$controller])) {
-            $this->getRoutes[$controller] = [];
-          }
-          $this->getRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: GET $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
+        } else if ($getAttribute = getAttribute($method, Get::class)) {
+          $this->registerRoute('GET', $controller, $method->getName(), $getAttribute->path);
         } else if ($postAttribute = getAttribute($method, Post::class)) {
-          $path = $postAttribute->path;
-          $route = new Route(
-            $controller,
-            $method->getName(),
-            $basePath,
-            $path,
-            $this->parsePathPattern($path)
-          );
-          if (!isset($this->postRoutes[$controller])) {
-            $this->postRoutes[$controller] = [];
-          }
-          $this->postRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: POST $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
+          $this->registerRoute('POST', $controller, $method->getName(), $postAttribute->path);
+        } else if ($putAttribute = getAttribute($method, Put::class)) {
+          $this->registerRoute('PUT', $controller, $method->getName(), $putAttribute->path);
+        } else if ($deleteAttribute = getAttribute($method, Delete::class)) {
+          $this->registerRoute('DELETE', $controller, $method->getName(), $deleteAttribute->path);
         }
       }
       $this->logger->debug("Controller registered: $controller");
@@ -237,6 +247,7 @@ class Router
     if ($method === 'POST') {
       if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
         $method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+        $this->logger->debug("Method override: $method");
       }
     }
     $matched = false;

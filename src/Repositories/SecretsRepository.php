@@ -173,15 +173,15 @@ class SecretsRepository extends BaseRepository
   }
 
   /**
-   * @param int $id The ID of the secret to update
-   * @param string $content The new content of the secret
+   * @param Secret $secret The secret to update
    * @return bool True if the secret was updated successfully
    */
-  public function update(int $id, string $content): bool
+  public function update(Secret $secret): bool
   {
-    $stmt = $this->db->query("UPDATE posts SET content = :content WHERE post_id = :id", [
-      'id' => $id,
-      'content' => $content
+    $stmt = $this->db->query("UPDATE posts SET content = :content, nickname = :nickname WHERE post_id = :id", [
+      'id' => $secret->post_id,
+      'content' => $secret->content,
+      'nickname' => $secret->nickname
     ]);
     return $stmt->rowCount() > 0;
   }

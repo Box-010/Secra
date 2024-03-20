@@ -113,6 +113,7 @@ use Secra\Models\Secret;
 <script src="./scripts/utils.js"></script>
 <script src="./scripts/attitudes.min.js"></script>
 <script src="./scripts/load-more.js"></script>
+<script src="./scripts/dropdown.js"></script>
 <script>
     function publishSecret(event) {
         event.preventDefault();
@@ -174,6 +175,7 @@ use Secra\Models\Secret;
                 itemListEl.innerHTML = secretsHtml;
                 window.initAttitudes();
                 window.initLoadMore();
+                window.initDropdown();
             });
     }
 

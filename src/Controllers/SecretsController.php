@@ -6,6 +6,7 @@ use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Router\Attributes\Controller;
+use Secra\Arch\Router\Attributes\Delete;
 use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\Attributes\Header;
@@ -35,6 +36,71 @@ class SecretsController extends BaseController
   {
     $secret = $this->secretsRepository->getById($secretId);
     $this->templateEngine->render('Views/Detail', ['secret' => $secret]);
+  }
+
+  #[Delete(':secretId(\d+)')]
+  public function deleteSecret(#[Param] string $secretId): void
+  {
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->json(
+        ["success" => false, "message" => "You must be logged in to delete a secret"],
+        401
+      );
+      return;
+    }
+    $secret = $this->secretsRepository->getById($secretId);
+    if ($secret->author_id !== $this->sessionService->getCurrentUser()->user_id) {
+      $this->json(
+        ["success" => false, "message" => "You are not authorized to delete this secret"],
+        403
+      );
+      return;
+    }
+    if ($this->secretsRepository->delete($secretId)) {
+      $this->json(
+        ["success" => true, "message" => "Secret deleted successfully"]
+      );
+    } else {
+      $this->json(
+        ["success" => false, "message" => "Failed to delete secret"],
+        500
+      );
+    }
+  }
+
+  #[Get(':secretId(\d+)/edit')]
+  public function secretEditPage(#[Param] string $secretId): void
+  {
+    $secret = $this->secretsRepository->getById($secretId);
+    $this->templateEngine->render('Views/Secrets/Edit', ['secret' => $secret]);
+  }
+
+  #[Post(':secretId(\d+)/edit')]
+  public function editSecret(
+    #[Param] string                            $secretId,
+    #[FormData("content")] string              $content,
+    #[FormData("nickname", false)] string|null $nickname = null,
+  ): void
+  {
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->redirect(PUBLIC_ROOT . "users/login");
+      return;
+    }
+    $secret = $this->secretsRepository->getById($secretId);
+    if ($secret->author_id !== $this->sessionService->getCurrentUser()->user_id) {
+      $this->redirect(PUBLIC_ROOT . "secrets/$secret->post_id");
+      return;
+    }
+    $encoded_content = htmlentities($content, ENT_QUOTES);
+    $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
+    $secret->content = $encoded_content;
+    $secret->nickname = $encoded_nickname;
+    if ($this->secretsRepository->update($secret)) {
+      $this->redirect(PUBLIC_ROOT . "secrets/$secret->post_id");
+    } else {
+      $this->redirectDelay(PUBLIC_ROOT . "secrets/$secret->post_id/edit", 3);
+      echo "Failed to update secret";
+    }
   }
 
   #[Get]

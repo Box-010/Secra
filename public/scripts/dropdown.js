@@ -1,4 +1,28 @@
 (() => {
+    function getElementLeft(element) {
+        let actualLeft = element.offsetLeft;
+        let current = element.offsetParent;
+
+        while (current !== null) {
+            actualLeft += current.offsetLeft;
+            current = current.offsetParent;
+        }
+
+        return actualLeft;
+    }
+
+    function getElementTop(element) {
+        let actualTop = element.offsetTop;
+        let current = element.offsetParent;
+
+        while (current !== null) {
+            actualTop += current.offsetTop;
+            current = current.offsetParent;
+        }
+
+        return actualTop;
+    }
+
     const actionHandlers = {
         "edit-secret": (id) => {
             window.location.href = `./secrets/${id}/edit`;
@@ -41,7 +65,8 @@
                 dropdown.classList.toggle('dropdown-menu--active');
                 if (!isActive) {
                     // calculate the position of the dropdown
-                    const {top, left} = activatorElement.getBoundingClientRect();
+                    const top = getElementTop(activatorElement);
+                    const left = getElementLeft(activatorElement);
                     dropdown.style.top = `${top + activatorElement.offsetHeight}px`;
                     dropdown.style.left = `${left}px`;
                     // close the dropdown when clicking outside

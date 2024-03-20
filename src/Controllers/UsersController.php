@@ -133,4 +133,25 @@ class UsersController extends BaseController
     $this->logger->error($e->getMessage());
     return 'Internal error';
   }
+  #[Get('changepassword')]
+  public function changepassword(): void
+  {
+    $this->templateEngine->render('Views/Users/ChangePassword');
+  }
+
+  #[Post('changepassword')]
+  public function changepasswordPost(): void
+  {
+    $user = $this->userRepository->getUserByUsername($this->sessionService->getCurrentUser()->user_name);
+    if (!$user || !password_verify($_POST['oldpassword'] . $user->salt, $user->password)) {
+      $this->location('/users/changepassword', 'Invalid password');
+      return;
+    }
+    $randomSalt = bin2hex(random_bytes(32));
+    $user->password = password_hash($_POST['newpassword'] . $randomSalt, PASSWORD_DEFAULT);
+    $user->salt = $randomSalt;
+    $this->userRepository->update($user);
+    //弹出修改成功
+    $this->location('/users/me', 'Password changed');
+  }
 }

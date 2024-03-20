@@ -233,6 +233,24 @@ try {
   exit;
 }
 
+// 创建视图
+try {
+  $sql = "CREATE VIEW v_user AS
+  SELECT
+    users.*,
+    GROUP_CONCAT(roles.role_name SEPARATOR ',') AS roles,
+    (SELECT COUNT(*) FROM posts WHERE posts.author_id = users.user_id) AS secret_count
+  FROM users
+  LEFT JOIN user_roles ON users.user_id = user_roles.user_id
+  LEFT JOIN roles ON user_roles.role_id = roles.role_id
+  GROUP BY users.user_id;";
+  $conn->exec($sql);
+  echo "View v_user created successfully<br>";
+} catch (PDOException $e) {
+  echo $sql . "<br>" . $e->getMessage();
+  exit;
+}
+
 // 断开连接
 $conn = null;
 echo "Connection closed<br>";

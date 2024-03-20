@@ -14,42 +14,21 @@ class UserRepository extends BaseRepository
 {
   public function getUserById(int $id): User|bool
   {
-    $stmt = $this->db->query("SELECT
-      users.*,
-      GROUP_CONCAT(roles.role_name SEPARATOR ',') AS roles
-    FROM users
-    LEFT JOIN user_roles ON users.user_id = user_roles.user_id
-    LEFT JOIN roles ON user_roles.role_id = roles.role_id
-    WHERE users.user_id = ?
-    GROUP BY users.user_id", [$id]);
+    $stmt = $this->db->query("SELECT * FROM v_user WHERE user_id = ?", [$id]);
     $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
     return $stmt->fetch();
   }
 
   public function getUserByUsername(string $user_name): User|bool
   {
-    $stmt = $this->db->query("SELECT
-      users.*,
-      GROUP_CONCAT(roles.role_name SEPARATOR ',') AS roles
-    FROM users
-    LEFT JOIN user_roles ON users.user_id = user_roles.user_id
-    LEFT JOIN roles ON user_roles.role_id = roles.role_id
-    WHERE users.user_name = ?
-    GROUP BY users.user_id", [$user_name]);
+    $stmt = $this->db->query("SELECT * FROM v_user WHERE user_name = ?", [$user_name]);
     $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
     return $stmt->fetch();
   }
 
   public function getUserByEmail(string $email): User|bool
   {
-    $stmt = $this->db->query("SELECT
-      users.*,
-      GROUP_CONCAT(roles.role_name SEPARATOR ',') AS roles
-    FROM users
-    LEFT JOIN user_roles ON users.user_id = user_roles.user_id
-    LEFT JOIN roles ON user_roles.role_id = roles.role_id
-    WHERE users.email = ?
-    GROUP BY users.user_id", [$email]);
+    $stmt = $this->db->query("SELECT * FROM v_user WHERE email = ?", [$email]);
     $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
     return $stmt->fetch();
   }

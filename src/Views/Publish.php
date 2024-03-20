@@ -59,16 +59,16 @@
 
               <div class="spacer"></div>
 
-              <div class="badge">
-                <div class="insert-image">
-                  <input type="file" id="image-input" name="image" accept="image/*" multiple/>
-                  <label class="button button-icon" for="image-input">
-                    <span class="icon material-symbols-outlined">
-                      add_photo_alternate
-                    </span>
-                  </label>
-                </div>
-              </div>
+              <!--              <div class="badge">-->
+              <!--                <div class="insert-image">-->
+              <!--                  <input type="file" id="image-input" name="image" accept="image/*" multiple/>-->
+              <!--                  <label class="button button-icon" for="image-input">-->
+              <!--                    <span class="icon material-symbols-outlined">-->
+              <!--                      add_photo_alternate-->
+              <!--                    </span>-->
+              <!--                  </label>-->
+              <!--                </div>-->
+              <!--              </div>-->
               <button class="button button-primary" id="publish-btn">
                 发布
               </button>
@@ -93,22 +93,22 @@
 
 <script src="./scripts/input.js"></script>
 <script>
-    const imageInputEl = document.getElementById("image-input");
-    const selectedImages = [];
-
-    function handleFileSelect(evt) {
-        const files = evt.target.files;
-        for (let i = 0, f;
-             (f = files[i]); i++) {
-            if (!f.type.match("image.*")) {
-                continue;
-            }
-            console.log(f);
-            selectedImages.push(f);
-        }
-    }
-
-    imageInputEl.addEventListener("change", handleFileSelect);
+    // const imageInputEl = document.getElementById("image-input");
+    // const selectedImages = [];
+    //
+    // function handleFileSelect(evt) {
+    //     const files = evt.target.files;
+    //     for (let i = 0, f;
+    //          (f = files[i]); i++) {
+    //         if (!f.type.match("image.*")) {
+    //             continue;
+    //         }
+    //         console.log(f);
+    //         selectedImages.push(f);
+    //     }
+    // }
+    //
+    // imageInputEl.addEventListener("change", handleFileSelect);
 </script>
 </body>
 

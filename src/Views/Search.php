@@ -26,7 +26,7 @@ use Secra\Models\User;
   <a class="button button-icon" href="./">
     <span class="icon material-symbols-outlined"> arrow_back </span>
   </a>
-  <span class="header-title">编辑秘语</span>
+  <span class="header-title">搜索秘语</span>
   <div class="spacer"></div>
 </header>
 <main class="main">

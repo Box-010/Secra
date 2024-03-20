@@ -66,6 +66,59 @@ class SecretsRepository extends BaseRepository
     return $this->resolveSecretsAttitudeStatus($secrets);
   }
 
+  public function countAll(): int
+  {
+    $stmt = $this->db->query("SELECT COUNT(*) FROM posts");
+    if (!$stmt) {
+      $this->logger->error('Failed to count secrets: ' . $this->db->lastError()->getMessage());
+      return 0;
+    }
+    return $stmt->fetchColumn();
+  }
+
+  public function getByUserId(
+    int                $userId,
+    SecretsOrderColumn $orderBy = SecretsOrderColumn::CREATED_AT,
+    bool               $desc = true,
+    int                $limit = 10,
+    int                $offset = 0
+  )
+  {
+    $order = $desc ? 'DESC' : 'ASC';
+    $stmt = $this->db->query("SELECT
+      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
+      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
+    FROM posts
+    INNER JOIN users u on posts.author_id = u.user_id
+    WHERE author_id = :userId
+    ORDER BY {$orderBy->value} $order
+    LIMIT $limit OFFSET $offset;", [
+      'userId' => $userId
+    ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to get secrets by user ID: ' . $this->db->lastError()->getMessage());
+      return [];
+    }
+    $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
+    $secrets = $stmt->fetchAll();
+
+    return $this->resolveSecretsAttitudeStatus($secrets);
+  }
+
+  public function countByUserId(int $userId): int
+  {
+    $stmt = $this->db->query("SELECT COUNT(*) FROM posts WHERE author_id = :userId", [
+      'userId' => $userId
+    ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to count secrets by user ID: ' . $this->db->lastError()->getMessage());
+      return 0;
+    }
+    return $stmt->fetchColumn();
+  }
+
   /**
    * @param int $id The ID of the secret to get
    * @return Secret|false The secret with the given ID, or false if not found

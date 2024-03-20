@@ -93,6 +93,11 @@ class SessionService
     return $this->currentSession;
   }
 
+  public function getCurrentUserId(): int|null
+  {
+    return $this->currentUser?->user_id;
+  }
+
   public function createSession(string|User $user): Session
   {
     if (is_string($user)) {

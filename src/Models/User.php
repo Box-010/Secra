@@ -11,11 +11,13 @@ class User
   public string $salt = "";
   public string $email;
   public string $created_at;
+  public array $user_roles = [];
+  public int $secret_count;
 
   public function __set($name, $value)
   {
     if ($name === 'roles') {
-      $this->roles = explode(',', $value);
+      $this->user_roles = explode(',', $value);
     }
   }
 }

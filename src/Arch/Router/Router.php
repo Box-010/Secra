@@ -13,6 +13,7 @@ use ReflectionParameter;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Cookie;
+use Secra\Arch\Router\Attributes\Delete;
 use Secra\Arch\Router\Attributes\ErrorHandler;
 use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
@@ -22,6 +23,7 @@ use Secra\Arch\Router\Attributes\IP;
 use Secra\Arch\Router\Attributes\Param;
 use Secra\Arch\Router\Attributes\Pipes;
 use Secra\Arch\Router\Attributes\Post;
+use Secra\Arch\Router\Attributes\Put;
 use Secra\Arch\Router\Attributes\Query;
 use Secra\Arch\Router\Models\MatchResult;
 use Secra\Arch\Router\Models\PathDynamicParam;
@@ -97,6 +99,34 @@ class Router
     return $controllers;
   }
 
+  private function registerRoute(
+    string $httpMethod,
+    string $controller,
+    string $methodName,
+    string $path,
+  ): void
+  {
+    $routes = match ($httpMethod) {
+      'GET' => 'getRoutes',
+      'POST' => 'postRoutes',
+      'PUT' => 'putRoutes',
+      'DELETE' => 'deleteRoutes',
+      default => throw new Exception('Unsupported method'),
+    };
+    if (!isset(($this->$routes)[$controller])) {
+      ($this->$routes)[$controller] = [];
+    }
+    $basePath = $this->basePathMap[$controller];
+    ($this->$routes)[$controller][] = new Route(
+      $controller,
+      $methodName,
+      $basePath,
+      $path,
+      $this->parsePathPattern($path)
+    );
+    $this->logger->debug("Route registered: $httpMethod $path, controller: $controller, pathPattern: " . json_encode($this->parsePathPattern($path)));
+  }
+
   private function registerController($controller): void
   {
     $reflection = new ReflectionClass($controller);
@@ -118,34 +148,14 @@ class Router
         }
         if ($errorHandler = getAttribute($method, ErrorHandler::class)) {
           $this->registerErrorHandler($controller, $method->getName(), $errorHandler->errorClass);
-        } elseif ($getAttribute = getAttribute($method, Get::class)) {
-          $path = $getAttribute->path;
-          $route = new Route(
-            $controller,
-            $method->getName(),
-            $basePath,
-            $path,
-            $this->parsePathPattern($path)
-          );
-          if (!isset($this->getRoutes[$controller])) {
-            $this->getRoutes[$controller] = [];
-          }
-          $this->getRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: GET $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
+        } else if ($getAttribute = getAttribute($method, Get::class)) {
+          $this->registerRoute('GET', $controller, $method->getName(), $getAttribute->path);
         } else if ($postAttribute = getAttribute($method, Post::class)) {
-          $path = $postAttribute->path;
-          $route = new Route(
-            $controller,
-            $method->getName(),
-            $basePath,
-            $path,
-            $this->parsePathPattern($path)
-          );
-          if (!isset($this->postRoutes[$controller])) {
-            $this->postRoutes[$controller] = [];
-          }
-          $this->postRoutes[$controller][] = $route;
-          $this->logger->debug("Route registered: POST $path, controller: $controller, pathPattern: " . json_encode($route->pathPatternItems));
+          $this->registerRoute('POST', $controller, $method->getName(), $postAttribute->path);
+        } else if ($putAttribute = getAttribute($method, Put::class)) {
+          $this->registerRoute('PUT', $controller, $method->getName(), $putAttribute->path);
+        } else if ($deleteAttribute = getAttribute($method, Delete::class)) {
+          $this->registerRoute('DELETE', $controller, $method->getName(), $deleteAttribute->path);
         }
       }
       $this->logger->debug("Controller registered: $controller");
@@ -237,6 +247,7 @@ class Router
     if ($method === 'POST') {
       if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
         $method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+        $this->logger->debug("Method override: $method");
       }
     }
     $matched = false;
@@ -281,13 +292,49 @@ class Router
     }
   }
 
+  private function getStaticFileMimeType($filePath): string
+  {
+    if (str_ends_with($filePath, '.css')) {
+      return 'text/css';
+    } else if (str_ends_with($filePath, '.js')) {
+      return 'application/javascript';
+    } else if (str_ends_with($filePath, '.png')) {
+      return 'image/png';
+    } else if (str_ends_with($filePath, '.jpg') || str_ends_with($filePath, '.jpeg')) {
+      return 'image/jpeg';
+    } else if (str_ends_with($filePath, '.gif')) {
+      return 'image/gif';
+    } else if (str_ends_with($filePath, '.svg')) {
+      return 'image/svg+xml';
+    } else if (str_ends_with($filePath, '.ico')) {
+      return 'image/x-icon';
+    } else if (str_ends_with($filePath, '.webp')) {
+      return 'image/webp';
+    } else if (str_ends_with($filePath, '.mp3')) {
+      return 'audio/mpeg';
+    } else if (str_ends_with($filePath, '.mp4')) {
+      return 'video/mp4';
+    } else if (str_ends_with($filePath, '.webm')) {
+      return 'video/webm';
+    } else if (str_ends_with($filePath, '.ogg')) {
+      return 'audio/ogg';
+    } else if (str_ends_with($filePath, '.wav')) {
+      return 'audio/wav';
+    } else if (str_ends_with($filePath, '.flac')) {
+      return 'audio/flac';
+    }
+    return mime_content_type($filePath);
+  }
+
   private function handleStaticRoute($path): bool
   {
     foreach ($this->staticRoutes as $basePath => $filePath) {
       if (str_starts_with($path, $basePath)) {
-        $filePath = $filePath . substr($path, strlen($basePath));
-        if (file_exists($filePath)) {
-          header('Content-Type: ' . mime_content_type($filePath));
+        $filePath = $filePath . '/' . substr($path, strlen($basePath));
+        if (file_exists($filePath) && is_file($filePath)) {
+          $this->logger->info("Static route resolved: $filePath");
+          header('Content-Type: ' . $this->getStaticFileMimeType($filePath));
+          header('X-Resolved-By: Secra');
           readfile($filePath);
           return true;
         }

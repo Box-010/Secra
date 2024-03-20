@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(__DIR__) . '/config/admin.php');
-require_once(dirname(__DIR__) . '/config/database.php');
+require_once(__DIR__ . '/config/admin.php');
+require_once(__DIR__ . '/config/database.php');
 
 // 先创建连接
 try {
@@ -228,6 +228,24 @@ try {
   $sql = "GRANT ALL PRIVILEGES ON " . DB_NAME . ".* TO '" . DB_USER . "'@'" . DB_HOST . "'";
   $conn->exec($sql);
   echo "User granted successfully<br>";
+} catch (PDOException $e) {
+  echo $sql . "<br>" . $e->getMessage();
+  exit;
+}
+
+// 创建视图
+try {
+  $sql = "CREATE VIEW v_user AS
+  SELECT
+    users.*,
+    GROUP_CONCAT(roles.role_name SEPARATOR ',') AS roles,
+    (SELECT COUNT(*) FROM posts WHERE posts.author_id = users.user_id) AS secret_count
+  FROM users
+  LEFT JOIN user_roles ON users.user_id = user_roles.user_id
+  LEFT JOIN roles ON user_roles.role_id = roles.role_id
+  GROUP BY users.user_id;";
+  $conn->exec($sql);
+  echo "View v_user created successfully<br>";
 } catch (PDOException $e) {
   echo $sql . "<br>" . $e->getMessage();
   exit;

@@ -158,6 +158,7 @@ use Secra\Models\Secret;
 
 <script src="./scripts/attitudes.min.js"></script>
 <script src="./scripts/input.js"></script>
+<script src="./scripts/dropdown.js"></script>
 </body>
 
 </html>

@@ -12,6 +12,7 @@ use Secra\Components\DI\Attributes\Inject;
 use Secra\Components\DI\Attributes\Provide;
 use Secra\Components\DI\Attributes\Singleton;
 use Secra\Models\User;
+use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
 
@@ -22,6 +23,7 @@ use Secra\Services\SessionService;
 class UsersController extends BaseController
 {
   #[Inject] private UserRepository $userRepository;
+  #[Inject] private SecretsRepository $secretsRepository;
   #[Inject] private SessionService $sessionService;
   #[Inject] private ILogger $logger;
 
@@ -112,7 +114,17 @@ class UsersController extends BaseController
   #[Get('me')]
   public function me(): void
   {
-    $this->templateEngine->render('Views/Users/Me');
+    if ($this->sessionService->isUserLoggedIn()) {
+      $mySecrets = $this->secretsRepository->getByUserId($this->sessionService->getCurrentUserId());
+      $secretCount = $this->secretsRepository->countByUserId($this->sessionService->getCurrentUserId());
+    } else {
+      $mySecrets = [];
+      $secretCount = 0;
+    }
+    $this->templateEngine->render('Views/Users/Me', [
+      'mySecrets' => $mySecrets,
+      'secretCount' => $secretCount
+    ]);
   }
 
   private function get_pdo_exception_message(PDOException $e): string

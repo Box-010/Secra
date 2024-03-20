@@ -39,15 +39,6 @@ $container->registerAll(
   Router::class
 );
 
-$router = $container->get(Router::class);
-$router->registerStaticRoute('', dirname(__DIR__) . '/public');
-$router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
-  $logger = $container->get(ILogger::class);
-  $logger->error($e->getMessage());
-  http_response_code(500);
-  echo 'Internal Server Error';
-});
-
 $sessionService = $container->get(SessionService::class);
 $permissionService = $container->get(PermissionService::class);
 
@@ -66,6 +57,15 @@ $container->set(TemplateEngine::class, function () use ($sessionService, $permis
       },
     ]
   );
+});
+
+$router = $container->get(Router::class);
+$router->registerStaticRoute('', dirname(__DIR__) . '/public');
+$router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
+  $logger = $container->get(ILogger::class);
+  $logger->error($e->getMessage());
+  http_response_code(500);
+  echo 'Internal Server Error';
 });
 
 $routeStr = $_GET["route"] ?? "";

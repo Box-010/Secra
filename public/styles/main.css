@@ -30,7 +30,7 @@ body {
     --theme-secondary-color: rgb(255, 64, 129);
     --theme-secondary-color-lighten: rgb(255, 128, 171);
     --theme-secondary-color-darken: rgb(245, 0, 87);
-    --theme-background-color: rgb(244, 244, 244);
+    --theme-background-color: 244, 244, 244;
     --theme-surface-color: rgb(255, 255, 255);
     --theme-error-color: 244, 67, 54;
     --theme-text-color: rgba(0, 0, 0, 0.87);
@@ -41,9 +41,9 @@ body {
     --theme-on-surface-color: var(--theme-text-color);
     --theme-highlight-color: 0, 0, 0;
     --theme-divider-color: #e0e0e0;
-    --theme-textfield-background-color: var(--theme-background-color);
+    --theme-textfield-background-color: rgb(var(--theme-background-color));
 
-    background-color: var(--theme-background-color);
+    background-color: rgb(var(--theme-background-color));
     color: var(--theme-on-background-color);
 }
 
@@ -57,7 +57,7 @@ body {
     }
 
     body {
-        --theme-background-color: rgb(18, 18, 18) !important;
+        --theme-background-color: 18, 18, 18 !important;
         --theme-on-primary-color: rgb(0, 0, 0) !important;
         --theme-surface-color: rgb(31, 31, 31) !important;
         --theme-text-color: rgba(255, 255, 255, 1) !important;
@@ -86,7 +86,7 @@ body {
 }
 
 .header {
-    background-color: var(--theme-background-color);
+    background-color: rgb(var(--theme-background-color));
     padding: 16px;
     display: flex;
     justify-content: center;
@@ -120,7 +120,7 @@ body {
 }
 
 .footer {
-    background-color: var(--theme-background-color);
+    background-color: rgb(var(--theme-background-color));
     padding: 16px;
     display: flex;
     justify-content: center;
@@ -1576,7 +1576,7 @@ a.card {
     border-radius: 6px;
     font-size: 1em;
     resize: none;
-    background-color: var(--theme-background-color);
+    background-color: rgb(var(--theme-background-color));
     color: var(--theme-text-color);
     box-sizing: border-box;
     transition: color, background-color 0.2s ease-in-out;
@@ -1629,7 +1629,7 @@ a.card {
 }
 
 .sort-type-select {
-    background-color: var(--theme-background-color);
+    background-color: rgb(var(--theme-background-color));
 }
 
 .login-tip {

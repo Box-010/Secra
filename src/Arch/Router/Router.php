@@ -33,6 +33,7 @@ use Secra\Arch\Router\Models\MatchResult;
 use Secra\Arch\Router\Models\PathDynamicParam;
 use Secra\Arch\Router\Models\PathPatternItem;
 use Secra\Arch\Router\Pipes\Pipe;
+use Secra\Arch\Template\TemplateEngine;
 
 
 #[Provide(Router::class)]
@@ -73,8 +74,9 @@ class Router
   private Closure|null $globalErrorHandler = null;
 
   public function __construct(
-    protected Container       $container,
-    #[Inject] private ILogger $logger
+    protected Container              $container,
+    #[Inject] private TemplateEngine $templateEngine,
+    #[Inject] private ILogger        $logger
   )
   {
     $this->controllers = $this->getControllers();
@@ -288,7 +290,7 @@ class Router
 
     if (!$matched) {
       http_response_code(404);
-      echo '404';
+      $this->templateEngine->render('Views/404');
     }
   }
 

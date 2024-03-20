@@ -68,22 +68,22 @@ use Secra\Models\Secret;
         </form>
       <?php endif; ?>
 
-      <div class="search-box">
-        <input type="text" class="search-box-input" placeholder="搜索秘语"/>
-        <button class="button button-icon">
+      <form class="search-box" action="./search" method="get">
+        <input type="text" class="search-box-input" placeholder="搜索秘语" name="q" required/>
+        <button class="button button-icon" type="submit">
           <span class="icon material-symbols-outlined"> search </span>
         </button>
-      </div>
+      </form>
     </div>
 
     <div class="item-list-container">
       <div class="item-list-header">
         <div class="item-list-header-title">秘语</div>
         <div class="spacer"></div>
-        <div class="button-group sort-type-select">
-          <button class="button button-active">新发</button>
-          <button class="button">新回</button>
-        </div>
+        <!--        <div class="button-group sort-type-select">-->
+        <!--          <button class="button button-active">新发</button>-->
+        <!--          <button class="button">新回</button>-->
+        <!--        </div>-->
       </div>
 
       <div class="item-list" id="secret-list"<?= empty($secrets) ? ' data-empty="1"' : '' ?>>

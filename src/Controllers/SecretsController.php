@@ -35,7 +35,7 @@ class SecretsController extends BaseController
   public function secretDetailPage(#[Param] string $secretId): void
   {
     $secret = $this->secretsRepository->getById($secretId);
-    $this->templateEngine->render('Views/Detail', ['secret' => $secret]);
+    $this->templateEngine->render('Views/Secrets/Detail', ['secret' => $secret]);
   }
 
   #[Delete(':secretId(\d+)')]
@@ -104,7 +104,7 @@ class SecretsController extends BaseController
   }
 
   #[Get]
-  public function secretsListPage(
+  public function secretsList(
     #[Query("order_by")]
     #[Pipes([ParseSecretsOrderColumnPipe::class])]
     SecretsOrderColumn       $orderBy = SecretsOrderColumn::CREATED_AT,
@@ -127,6 +127,34 @@ class SecretsController extends BaseController
     }
     if ($secretCount > $offset + $pageSize) {
       $this->templateEngine->render('Components/LoadMoreIndicator', ['url' => "./secrets?order_by=" . strtolower($orderBy->name) . "&order={$order}&page_size={$pageSize}&page=" . ($page + 1)]);
+    }
+  }
+
+  #[Get('search')]
+  public function searchSecrets(
+    #[Query("q")] string     $query,
+    #[Query("order_by")]
+    #[Pipes([ParseSecretsOrderColumnPipe::class])]
+    SecretsOrderColumn       $orderBy = SecretsOrderColumn::CREATED_AT,
+    #[Query("order")] string $order = "desc",
+    #[Query("page_size")]
+    #[Pipes([ParseIntPipe::class])]
+    int                      $pageSize = 10,
+    #[Query("page")]
+    #[Pipes([ParseIntPipe::class])]
+    int                      $page = 1
+  ): void
+  {
+    $order = strtolower($order);
+    $offset = ($page - 1) * $pageSize;
+    $desc = $order !== "asc";
+    $secrets = $this->secretsRepository->search($query, $orderBy, $desc, $pageSize, $offset);
+    $secretCount = $this->secretsRepository->countBySearchQuery($query);
+    foreach ($secrets as $secret) {
+      $this->templateEngine->render('Components/SecretCard', ['secret' => $secret, 'link' => true, 'showCommentBtn' => true]);
+    }
+    if ($secretCount > $offset + $pageSize) {
+      $this->templateEngine->render('Components/LoadMoreIndicator', ['url' => "./secrets/search?q={$query}&order_by=" . strtolower($orderBy->name) . "&order={$order}&page_size={$pageSize}&page=" . ($page + 1)]);
     }
   }
 

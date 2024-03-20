@@ -82,7 +82,7 @@ class SecretsRepository extends BaseRepository
     bool               $desc = true,
     int                $limit = 10,
     int                $offset = 0
-  )
+  ): array
   {
     $order = $desc ? 'DESC' : 'ASC';
     $stmt = $this->db->query("SELECT
@@ -105,6 +105,63 @@ class SecretsRepository extends BaseRepository
     $secrets = $stmt->fetchAll();
 
     return $this->resolveSecretsAttitudeStatus($secrets);
+  }
+
+  /**
+   * @param string $query The search query. Use spaces to separate words
+   * @param SecretsOrderColumn $orderBy Order by column
+   * @param bool $desc Is descending order
+   * @param int $limit The maximum number of secrets to get
+   * @param int $offset The number of secrets to skip
+   * @return Secret[]
+   */
+  public function search(
+    string             $query,
+    SecretsOrderColumn $orderBy = SecretsOrderColumn::CREATED_AT,
+    bool               $desc = true,
+    int                $limit = 10,
+    int                $offset = 0
+  ): array
+  {
+    $query = trim($query);
+    $query = preg_replace('/\s+/i', ' ', $query);
+    $query = implode('%', explode(' ', $query));
+    $order = $desc ? 'DESC' : 'ASC';
+    $stmt = $this->db->query("SELECT
+      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
+      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
+      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
+    FROM posts
+    INNER JOIN users u on posts.author_id = u.user_id
+    WHERE content LIKE :query
+    ORDER BY {$orderBy->value} $order
+    LIMIT $limit OFFSET $offset;", [
+      'query' => "%$query%"
+    ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to search secrets: ' . $this->db->lastError()->getMessage());
+      return [];
+    }
+    $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
+    $secrets = $stmt->fetchAll();
+
+    return $this->resolveSecretsAttitudeStatus($secrets);
+  }
+
+  public function countBySearchQuery(string $query): int
+  {
+    $query = trim($query);
+    $query = preg_replace('/\s+/i', ' ', $query);
+    $query = implode('%', explode(' ', $query));
+    $stmt = $this->db->query("SELECT COUNT(*) FROM posts WHERE content LIKE :query", [
+      'query' => "%$query%"
+    ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to count secrets by search query: ' . $this->db->lastError()->getMessage());
+      return 0;
+    }
+    return $stmt->fetchColumn();
   }
 
   public function countByUserId(int $userId): int

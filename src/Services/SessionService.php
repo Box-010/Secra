@@ -60,7 +60,14 @@ class SessionService
     $this->currentSession = $this->sessionRepository->save($new_session);
     $expires_at = strtotime($this->getCurrentSession()->expires_at);
 
-    setcookie('session_id', $new_session_id, $expires_at, '/', '', false, true);
+    setcookie('session_id', $new_session_id, [
+      "expires" => $expires_at,
+      "path" => "/",
+      "domain" => "",
+      "secure" => false,
+      "httponly" => true,
+      "samesite" => "Lax"
+    ]);
     $_SESSION['session_id'] = $new_session_id;
 
     $this->logger->info('Rotated session id from ' . $current_session_id . ' to ' . $new_session_id);
@@ -126,8 +133,14 @@ class SessionService
       throw new Exception('Failed to create session');
     }
 
-    setcookie('session_id', $session->session_id, strtotime('+30 day'), '/', '', false, true);
-
+    setcookie('session_id', $session->session_id, [
+      "expires" => strtotime('+30 day'),
+      "path" => "/",
+      "domain" => "",
+      "secure" => false,
+      "httponly" => true,
+      "samesite" => "Lax"
+    ]);
     return $session;
   }
 
@@ -137,7 +150,14 @@ class SessionService
     if ($session_id) {
       $this->sessionRepository->delete($session_id);
     }
-    setcookie('session_id', '', time() - 3600, '/', '', false, true);
+    setcookie('session_id', '', [
+      "expires" => time() - 3600,
+      "path" => "/",
+      "domain" => "",
+      "secure" => false,
+      "httponly" => true,
+      "samesite" => "Lax"
+    ]);
     session_destroy();
     $this->currentSession = null;
     $this->currentUser = null;

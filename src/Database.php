@@ -4,7 +4,7 @@ namespace Secra;
 
 use PDO;
 use PDOStatement;
-use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Components\DI\Attributes\Singleton;
 use Throwable;
 
 #[Singleton]

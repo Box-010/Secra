@@ -2,8 +2,8 @@
 
 namespace Secra\Arch\Logger;
 
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
 
 
 #[Provide(ILogger::class)]

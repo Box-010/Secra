@@ -4,12 +4,12 @@ require_once(dirname(__DIR__) . '/config/database.php');
 require_once(dirname(__DIR__) . '/config/website.php');
 require_once(__DIR__ . '/autoload.php');
 
-use Secra\Arch\DI\Container;
 use Secra\Arch\Logger\FileLogger;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Logger\LogLevel;
 use Secra\Arch\Router\Router;
 use Secra\Arch\Template\TemplateEngine;
+use Secra\Components\DI\Container;
 use Secra\Database;
 use Secra\Repositories\AttitudesRepository;
 use Secra\Repositories\SecretsRepository;

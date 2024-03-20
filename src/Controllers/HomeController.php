@@ -2,12 +2,12 @@
 
 namespace Secra\Controllers;
 
-use Secra\Arch\DI\Attributes\Inject;
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\BaseController;
+use Secra\Components\DI\Attributes\Inject;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
 use Secra\Repositories\SecretsRepository;
 use Secra\Services\SessionService;
 

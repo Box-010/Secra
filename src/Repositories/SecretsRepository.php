@@ -3,9 +3,9 @@
 namespace Secra\Repositories;
 
 use PDO;
-use Secra\Arch\DI\Attributes\Inject;
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Components\DI\Attributes\Inject;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
 use Secra\Constants\AttitudeableType;
 use Secra\Constants\SecretsOrderColumn;
 use Secra\Models\Secret;

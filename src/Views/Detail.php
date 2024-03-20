@@ -62,6 +62,7 @@ use Secra\Models\Secret;
       <?php endif; ?>
     </div>
 
+
     <div class="item-list-container">
       <div class="item-list-header">
         <div class="item-list-header-title">
@@ -120,6 +121,40 @@ use Secra\Models\Secret;
   </div>
 </main>
 <?= $render('Components/Footer') ?>
+
+<script src="./scripts/polyfill.min.js"></script>
+<script src="./scripts/cross-fetch.js"></script>
+<script src="./scripts/input.js"></script>
+<script src="./scripts/utils.js"></script>
+<script src="./scripts/attitudes.min.js"></script>
+<script>
+  function reply() {
+    const replyBtn = document.getElementById('reply-btn');
+    const replyTextarea = document.querySelector('.post-textarea');
+    const nicknameInput = document.getElementById('nickname');
+    replyBtn.addEventListener('click', async () => {
+      const content = replyTextarea.value;
+      const nickname = nicknameInput.value;
+      if (content.trim() === '') {
+        return;
+      }
+      const res = await fetch('./comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content,
+          nickname,
+          post_id: <?= $secret->post_id ?>,
+        }),
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    });
+  }
+</script>
 
 <script src="./scripts/attitudes.min.js"></script>
 <script src="./scripts/input.js"></script>

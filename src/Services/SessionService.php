@@ -3,10 +3,10 @@
 namespace Secra\Services;
 
 use Exception;
-use Secra\Arch\DI\Attributes\Inject;
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Logger\ILogger;
+use Secra\Components\DI\Attributes\Inject;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
 use Secra\Models\Session;
 use Secra\Models\User;
 use Secra\Repositories\SessionRepository;

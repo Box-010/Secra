@@ -10,10 +10,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Secra\Arch\DI\Attributes\Inject;
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
-use Secra\Arch\DI\Container;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\Cookie;
@@ -31,6 +27,10 @@ use Secra\Arch\Router\Models\MatchResult;
 use Secra\Arch\Router\Models\PathDynamicParam;
 use Secra\Arch\Router\Models\PathPatternItem;
 use Secra\Arch\Router\Pipes\Pipe;
+use Secra\Components\DI\Attributes\Inject;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
+use Secra\Components\DI\Container;
 
 
 #[Provide(Router::class)]

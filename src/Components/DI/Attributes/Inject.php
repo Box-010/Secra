@@ -1,6 +1,6 @@
 <?php
 
-namespace Secra\Arch\DI\Attributes;
+namespace Secra\Components\DI\Attributes;
 
 use Attribute;
 

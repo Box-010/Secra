@@ -2,9 +2,6 @@
 
 namespace Secra\Controllers;
 
-use Secra\Arch\DI\Attributes\Inject;
-use Secra\Arch\DI\Attributes\Provide;
-use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Router\Attributes\Controller;
 use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Param;
@@ -12,6 +9,9 @@ use Secra\Arch\Router\Attributes\Pipes;
 use Secra\Arch\Router\Attributes\Post;
 use Secra\Arch\Router\BaseController;
 use Secra\Arch\Router\Pipes\ParseIntPipe;
+use Secra\Components\DI\Attributes\Inject;
+use Secra\Components\DI\Attributes\Provide;
+use Secra\Components\DI\Attributes\Singleton;
 use Secra\Constants\AttitudeableType;
 use Secra\Constants\AttitudeType;
 use Secra\Pipes\ParseAttitudeableTypePipe;

@@ -3,7 +3,7 @@
 namespace Secra\Arch\Template;
 
 use RuntimeException;
-use Secra\Arch\DI\Attributes\Singleton;
+use Secra\Components\DI\Attributes\Singleton;
 
 #[Singleton]
 class TemplateEngine

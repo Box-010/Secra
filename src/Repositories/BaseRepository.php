@@ -2,8 +2,8 @@
 
 namespace Secra\Repositories;
 
-use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\Logger\ILogger;
+use Secra\Components\DI\Attributes\Inject;
 use Secra\Database;
 use Throwable;
 

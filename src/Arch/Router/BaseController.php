@@ -2,8 +2,8 @@
 
 namespace Secra\Arch\Router;
 
-use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\Template\TemplateEngine;
+use Secra\Components\DI\Attributes\Inject;
 
 class BaseController
 {

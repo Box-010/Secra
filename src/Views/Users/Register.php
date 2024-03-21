@@ -78,33 +78,33 @@
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
 <script>
-    addRandomBackground("#auth-card-image");
+  addRandomBackground("#auth-card-image");
 
-    document
-        .getElementById("auth-card-image")
-        .addEventListener("click", () => {
-            addRandomBackground("#auth-card-image");
-        });
+  document
+    .getElementById("auth-card-image")
+    .addEventListener("click", () => {
+      addRandomBackground("#auth-card-image");
+    });
 
-    document
-        .getElementById("register-form")
-        .addEventListener("submit", (e) => {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-            const passwordConfirm =
-                document.getElementById("password-confirm").value;
+  document
+    .getElementById("register-form")
+    .addEventListener("submit", (e) => {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const passwordConfirm =
+        document.getElementById("password-confirm").value;
 
-            if (!username || !password || !passwordConfirm) {
-                alert("请填写完整信息");
-                e.preventDefault();
-                return;
-            }
-            if (password !== passwordConfirm) {
-                alert("两次输入的密码不一致");
-                e.preventDefault();
+      if (!username || !password || !passwordConfirm) {
+        alert("请填写完整信息");
+        e.preventDefault();
+        return;
+      }
+      if (password !== passwordConfirm) {
+        alert("两次输入的密码不一致");
+        e.preventDefault();
 
-            }
-        });
+      }
+    });
 </script>
 </body>
 

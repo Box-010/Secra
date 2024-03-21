@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var callable(string, array): string $render
  */
@@ -7,10 +8,10 @@
 <html lang="zh-CN">
 
 <head>
-    <?= $render('Components/HtmlHead') ?>
-    <title>修改密码 | 隐境 Secra</title>
-    <link rel="stylesheet" href="./styles/bg-patterns.css" />
-    <link rel="stylesheet" href="./styles/auth.css" />
+  <?= $render('Components/HtmlHead') ?>
+  <title>修改密码 | 隐境 Secra</title>
+  <link rel="stylesheet" href="./styles/bg-patterns.css"/>
+  <link rel="stylesheet" href="./styles/auth.css"/>
 </head>
 
 <body>
@@ -55,34 +56,34 @@
 </main>
 <?= $render('Components/Footer') ?>
 
-    <script src="./scripts/random-bg.js"></script>
-    <script src="./scripts/input.js"></script>
-    <script>
-    addRandomBackground("#auth-card-image");
+<script src="./scripts/random-bg.js"></script>
+<script src="./scripts/input.js"></script>
+<script>
+  addRandomBackground("#auth-card-image");
 
-    document
-        .getElementById("auth-card-image")
-        .addEventListener("click", () => {
-            addRandomBackground("#auth-card-image");
-        });
-
-    // 验证两次输入密码是否相等不相等给出提示
-    document.getElementById("confirmpassword").addEventListener("input", function() {
-        if (document.getElementById("newpassword").value !== document.getElementById("confirmpassword").value) {
-            document.getElementById("confirmpassword").setCustomValidity("两次输入密码不一致");
-        } else {
-            document.getElementById("confirmpassword").setCustomValidity("");
-        }
+  document
+    .getElementById("auth-card-image")
+    .addEventListener("click", () => {
+      addRandomBackground("#auth-card-image");
     });
-    document.addEventListener('DOMContentLoaded', function() {
-        var urlParams = new URLSearchParams(window.location.search);
-        var error = urlParams.get('error');
 
-        if (error) {
-            alert('原密码错误，请重新输入');
-        }
-    });
-    </script>
+  // 验证两次输入密码是否相等不相等给出提示
+  document.getElementById("confirmpassword").addEventListener("input", function () {
+    if (document.getElementById("newpassword").value !== document.getElementById("confirmpassword").value) {
+      document.getElementById("confirmpassword").setCustomValidity("两次输入密码不一致");
+    } else {
+      document.getElementById("confirmpassword").setCustomValidity("");
+    }
+  });
+  document.addEventListener('DOMContentLoaded', function () {
+    var urlParams = new URLSearchParams(window.location.search);
+    var error = urlParams.get('error');
+
+    if (error) {
+      alert('原密码错误，请重新输入');
+    }
+  });
+</script>
 </body>
 
 </html>

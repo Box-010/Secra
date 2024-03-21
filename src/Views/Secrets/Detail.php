@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var callable(string, array): string $render
  * @var bool $isLoggedIn
@@ -99,7 +100,7 @@ use Secra\Models\Secret;
         <!--        </div>-->
       </div>
 
-      <div class="item-list" id="comments-list"<?= empty($comments) ? ' data-empty="1"' : '' ?>>
+      <div class="item-list" id="comments-list" <?= empty($comments) ? ' data-empty="1"' : '' ?>>
         <?php foreach ($comments as $comment) : ?>
           <?= $render('Components/CommentCard', ['comment' => $comment]); ?>
         <?php endforeach; ?>
@@ -118,67 +119,67 @@ use Secra\Models\Secret;
 <script src="./scripts/dropdown.js"></script>
 <script src="./scripts/load-more.js"></script>
 <script>
-    const secretId = parseInt(document.getElementById("secretId").dataset.secretId);
+  const secretId = parseInt(document.getElementById("secretId").dataset.secretId);
 
-    const replyFormEl = document.getElementById("reply-form");
+  const replyFormEl = document.getElementById("reply-form");
 
-    function submitReply(event) {
-        event.preventDefault();
-        const formEl = document.getElementById("reply-form");
-        const content = formEl.querySelector("#content").value;
-        const nickname = formEl.querySelector("#nickname").value;
-        const formData = new FormData();
-        formData.append("content", content);
-        formData.append("nickname", nickname);
-        fetch(`./secrets/${secretId}/comments`, {
-            method: "POST",
-            body: formData,
-            headers: {
-                'Accept': 'application/json',
-            }
-        })
-            .then(response => {
-                switch (response.status) {
-                    case 201:
-                        return response.json();
-                    case 401:
-                        alert("请先登录");
-                        window.location.href = "./users/login";
-                        break;
-                    default:
-                        return response.json().then(data => {
-                            throw new Error(data.message);
-                        });
-                }
-            })
-            .then(data => {
-                if (data.success) {
-                    refresh();
-                    formEl.querySelector("#content").value = "";
-                    formEl.querySelector("#nickname").value = "";
-                    // imageInputEl.value = "";
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                alert(error.message);
+  function submitReply(event) {
+    event.preventDefault();
+    const formEl = document.getElementById("reply-form");
+    const content = formEl.querySelector("#content").value;
+    const nickname = formEl.querySelector("#nickname").value;
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("nickname", nickname);
+    fetch(`./secrets/${secretId}/comments`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      }
+    })
+      .then(response => {
+        switch (response.status) {
+          case 201:
+            return response.json();
+          case 401:
+            alert("请先登录");
+            window.location.href = "./users/login";
+            break;
+          default:
+            return response.json().then(data => {
+              throw new Error(data.message);
             });
-    }
+        }
+      })
+      .then(data => {
+        if (data.success) {
+          refresh();
+          formEl.querySelector("#content").value = "";
+          formEl.querySelector("#nickname").value = "";
+          // imageInputEl.value = "";
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
 
-    replyFormEl.addEventListener("submit", submitReply);
+  replyFormEl.addEventListener("submit", submitReply);
 
-    function refresh() {
-        fetch(`./secrets/${secretId}/comments`)
-            .then(response => response.text())
-            .then(secretsHtml => {
-                const itemListEl = document.getElementById("comments-list");
-                itemListEl.innerHTML = secretsHtml;
-                window.initAttitudes();
-                window.initLoadMore();
-                window.initDropdown();
-            });
-    }
+  function refresh() {
+    fetch(`./secrets/${secretId}/comments`)
+      .then(response => response.text())
+      .then(secretsHtml => {
+        const itemListEl = document.getElementById("comments-list");
+        itemListEl.innerHTML = secretsHtml;
+        window.initAttitudes();
+        window.initLoadMore();
+        window.initDropdown();
+      });
+  }
 </script>
 </body>
 

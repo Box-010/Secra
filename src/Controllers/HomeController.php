@@ -21,6 +21,22 @@ class HomeController extends BaseController
   #[Inject] private SecretsRepository $secretsRepository;
   #[Inject] private SessionService $sessionService;
 
+  #[Get('')]
+  public function homePage(): void
+  {
+    $currentUser = $this->sessionService->getCurrentUser();
+    $welcomeMessage = $this->getWelcomeMessage($currentUser?->user_name);
+    $secrets = $this->secretsRepository->getAll();
+    $secretCount = $this->secretsRepository->countAll();
+    $hasMore = $secretCount > count($secrets);
+
+    $this->templateEngine->render('Views/Home', [
+      'welcomeMessage' => $welcomeMessage,
+      'secrets' => $secrets,
+      'hasMore' => $hasMore
+    ]);
+  }
+
   private function getWelcomeMessage(string|null $username = null): string
   {
     $hour = date('H');
@@ -37,22 +53,6 @@ class HomeController extends BaseController
       $text .= "，$username";
     }
     return $text;
-  }
-
-  #[Get('')]
-  public function homePage(): void
-  {
-    $currentUser = $this->sessionService->getCurrentUser();
-    $welcomeMessage = $this->getWelcomeMessage($currentUser?->user_name);
-    $secrets = $this->secretsRepository->getAll();
-    $secretCount = $this->secretsRepository->countAll();
-    $hasMore = $secretCount > count($secrets);
-
-    $this->templateEngine->render('Views/Home', [
-      'welcomeMessage' => $welcomeMessage,
-      'secrets' => $secrets,
-      'hasMore' => $hasMore
-    ]);
   }
 
   #[Get('publish')]

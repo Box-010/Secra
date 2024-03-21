@@ -18,20 +18,6 @@ class SecretsRepository extends BaseRepository
   #[Inject] private AttitudesRepository $attitudesRepository;
   #[Inject] private SessionService $sessionService;
 
-  private function resolveSecretsAttitudeStatus(array $secrets): array
-  {
-    return array_map(fn(Secret $secret) => $this->resolveSecretAttitudeStatus($secret), $secrets);
-  }
-
-  private function resolveSecretAttitudeStatus(Secret $secret): Secret
-  {
-    if ($this->sessionService->isUserLoggedIn()) {
-      $userId = $this->sessionService->getCurrentSession()->user_id;
-      $secret->user_attitude = $this->attitudesRepository->queryUserAttitude(AttitudeableType::SECRETS, $secret->post_id, $userId);
-    }
-    return $secret;
-  }
-
   /**
    * @param SecretsOrderColumn $orderBy Order by column
    * @param bool $desc Is descending order
@@ -47,13 +33,7 @@ class SecretsRepository extends BaseRepository
   ): array
   {
     $order = $desc ? 'DESC' : 'ASC';
-    $stmt = $this->db->query("SELECT
-      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
-    FROM posts
-    INNER JOIN users u on posts.author_id = u.user_id
+    $stmt = $this->db->query("SELECT * FROM v_secret
     ORDER BY {$orderBy->value} $order
     LIMIT $limit OFFSET $offset;");
     if (!$stmt) {
@@ -64,6 +44,20 @@ class SecretsRepository extends BaseRepository
     $secrets = $stmt->fetchAll();
 
     return $this->resolveSecretsAttitudeStatus($secrets);
+  }
+
+  private function resolveSecretsAttitudeStatus(array $secrets): array
+  {
+    return array_map(fn(Secret $secret) => $this->resolveSecretAttitudeStatus($secret), $secrets);
+  }
+
+  private function resolveSecretAttitudeStatus(Secret $secret): Secret
+  {
+    if ($this->sessionService->isUserLoggedIn()) {
+      $userId = $this->sessionService->getCurrentSession()->user_id;
+      $secret->user_attitude = $this->attitudesRepository->queryUserAttitude(AttitudeableType::SECRETS, $secret->post_id, $userId);
+    }
+    return $secret;
   }
 
   public function countAll(): int
@@ -85,13 +79,7 @@ class SecretsRepository extends BaseRepository
   ): array
   {
     $order = $desc ? 'DESC' : 'ASC';
-    $stmt = $this->db->query("SELECT
-      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
-    FROM posts
-    INNER JOIN users u on posts.author_id = u.user_id
+    $stmt = $this->db->query("SELECT * FROM v_secret
     WHERE author_id = :userId
     ORDER BY {$orderBy->value} $order
     LIMIT $limit OFFSET $offset;", [
@@ -127,13 +115,7 @@ class SecretsRepository extends BaseRepository
     $query = preg_replace('/\s+/i', ' ', $query);
     $query = implode('%', explode(' ', $query));
     $order = $desc ? 'DESC' : 'ASC';
-    $stmt = $this->db->query("SELECT
-      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-      (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
-    FROM posts
-    INNER JOIN users u on posts.author_id = u.user_id
+    $stmt = $this->db->query("SELECT * FROM v_secret
     WHERE content LIKE :query
     ORDER BY {$orderBy->value} $order
     LIMIT $limit OFFSET $offset;", [
@@ -154,7 +136,7 @@ class SecretsRepository extends BaseRepository
     $query = trim($query);
     $query = preg_replace('/\s+/i', ' ', $query);
     $query = implode('%', explode(' ', $query));
-    $stmt = $this->db->query("SELECT COUNT(*) FROM posts WHERE content LIKE :query", [
+    $stmt = $this->db->query("SELECT COUNT(*) FROM v_secret WHERE content LIKE :query", [
       'query' => "%$query%"
     ]);
     if (!$stmt) {
@@ -166,7 +148,7 @@ class SecretsRepository extends BaseRepository
 
   public function countByUserId(int $userId): int
   {
-    $stmt = $this->db->query("SELECT COUNT(*) FROM posts WHERE author_id = :userId", [
+    $stmt = $this->db->query("SELECT COUNT(*) FROM v_secret WHERE author_id = :userId", [
       'userId' => $userId
     ]);
     if (!$stmt) {
@@ -174,30 +156,6 @@ class SecretsRepository extends BaseRepository
       return 0;
     }
     return $stmt->fetchColumn();
-  }
-
-  /**
-   * @param int $id The ID of the secret to get
-   * @return Secret|false The secret with the given ID, or false if not found
-   */
-  public function getById(int $id): Secret|false
-  {
-    $stmt = $this->db->query("SELECT
-      posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-    (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
-    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
-    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
-    FROM posts
-    INNER JOIN secra.users u on posts.author_id = u.user_id
-    WHERE post_id = :id", [
-      'id' => $id
-    ]);
-    if (!$stmt) {
-      $this->logger->error('Failed to get secret by ID: ' . $this->db->lastError()->getMessage());
-      return false;
-    }
-    $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
-    return $this->resolveSecretAttitudeStatus($stmt->fetch());
   }
 
   /**
@@ -215,6 +173,24 @@ class SecretsRepository extends BaseRepository
       return $this->getById($this->db->lastInsertId());
     }
     return false;
+  }
+
+  /**
+   * @param int $id The ID of the secret to get
+   * @return Secret|false The secret with the given ID, or false if not found
+   */
+  public function getById(int $id): Secret|false
+  {
+    $stmt = $this->db->query("SELECT * FROM v_secret
+    WHERE post_id = :id", [
+      'id' => $id
+    ]);
+    if (!$stmt) {
+      $this->logger->error('Failed to get secret by ID: ' . $this->db->lastError()->getMessage());
+      return false;
+    }
+    $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
+    return $this->resolveSecretAttitudeStatus($stmt->fetch());
   }
 
   /**

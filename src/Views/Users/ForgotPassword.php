@@ -54,25 +54,25 @@
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
 <script>
-    addRandomBackground("#auth-card-image");
+  addRandomBackground("#auth-card-image");
 
-    document
-        .getElementById("auth-card-image")
-        .addEventListener("click", () => {
-            addRandomBackground("#auth-card-image");
-        });
+  document
+    .getElementById("auth-card-image")
+    .addEventListener("click", () => {
+      addRandomBackground("#auth-card-image");
+    });
 
-    document
-        .getElementById("forgot-password-form")
-        .addEventListener("submit", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            if (!email) {
-                alert("请输入邮箱");
-                return;
-            }
-            alert("已发送重置密码邮件，请查收");
-        });
+  document
+    .getElementById("forgot-password-form")
+    .addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      if (!email) {
+        alert("请输入邮箱");
+        return;
+      }
+      alert("已发送重置密码邮件，请查收");
+    });
 </script>
 </body>
 

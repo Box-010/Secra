@@ -69,13 +69,13 @@
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
 <script>
-    addRandomBackground("#auth-card-image");
+  addRandomBackground("#auth-card-image");
 
-    document
-        .getElementById("auth-card-image")
-        .addEventListener("click", () => {
-            addRandomBackground("#auth-card-image");
-        });
+  document
+    .getElementById("auth-card-image")
+    .addEventListener("click", () => {
+      addRandomBackground("#auth-card-image");
+    });
 </script>
 </body>
 

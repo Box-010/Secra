@@ -19,17 +19,9 @@ class TemplateEngine
   {
   }
 
-  private function resolveGlobalData(array $data): array
+  public function render(string $template, array $data = []): void
   {
-    $resolved = [];
-    foreach ($data as $key => $value) {
-      if (is_callable($value)) {
-        $resolved[$key] = $value();
-      } else {
-        $resolved[$key] = $value;
-      }
-    }
-    return $resolved;
+    echo $this->parse($template, $data);
   }
 
   public function parse(string $template, array $data = []): string
@@ -54,8 +46,16 @@ class TemplateEngine
     return ob_get_clean();
   }
 
-  public function render(string $template, array $data = []): void
+  private function resolveGlobalData(array $data): array
   {
-    echo $this->parse($template, $data);
+    $resolved = [];
+    foreach ($data as $key => $value) {
+      if (is_callable($value)) {
+        $resolved[$key] = $value();
+      } else {
+        $resolved[$key] = $value;
+      }
+    }
+    return $resolved;
   }
 }

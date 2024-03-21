@@ -11,15 +11,6 @@ use Secra\Models\Session;
 #[Singleton]
 class SessionRepository extends BaseRepository
 {
-  public function getSessionById(string $session_id): Session|bool
-  {
-    $stmt = $this->db->query("SELECT sessions.*, users.user_name
-    FROM sessions
-    INNER JOIN users ON sessions.user_id = users.user_id WHERE session_id = ?;", [$session_id]);
-    $stmt->setFetchMode(PDO::FETCH_CLASS, Session::class);
-    return $stmt->fetch();
-  }
-
   /**
    * @param Session $session The session to save
    * @return Session|false Returns the saved session if it was saved successfully, otherwise false
@@ -36,6 +27,15 @@ class SessionRepository extends BaseRepository
       return $this->getSessionById($session->session_id);
     }
     return false;
+  }
+
+  public function getSessionById(string $session_id): Session|bool
+  {
+    $stmt = $this->db->query("SELECT sessions.*, users.user_name
+    FROM sessions
+    INNER JOIN users ON sessions.user_id = users.user_id WHERE session_id = ?;", [$session_id]);
+    $stmt->setFetchMode(PDO::FETCH_CLASS, Session::class);
+    return $stmt->fetch();
   }
 
   public function update(Session $session): void

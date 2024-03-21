@@ -32,7 +32,7 @@
       request.onupgradeneeded = function (event) {
         self.db = event.target.result;
         if (!self.db.objectStoreNames.contains(self.dbName)) {
-          self.db.createObjectStore(self.dbName, { keyPath: 'key' });
+          self.db.createObjectStore(self.dbName, {keyPath: 'key'});
         }
       };
     });
@@ -70,7 +70,7 @@
       }
       var transaction = self.db.transaction(self.dbName, 'readwrite');
       var store = transaction.objectStore(self.dbName);
-      var request = store.put({ key: key, value: value });
+      var request = store.put({key: key, value: value});
       request.onsuccess = function (event) {
         resolve();
       };

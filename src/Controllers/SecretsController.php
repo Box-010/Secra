@@ -166,6 +166,20 @@ class SecretsController extends BaseController
     }
   }
 
+  #[Post]
+  public function createSecret(
+    #[Header('Accept')] string|null            $accept,
+    #[FormData("content")] string              $content,
+    #[FormData("nickname", false)] string|null $nickname = null,
+  ): void
+  {
+    if ($accept === "application/json") {
+      $this->createSecretJson($content, $nickname);
+    } else {
+      $this->createSecretHtml($content, $nickname);
+    }
+  }
+
   private function createSecretJson(string $content, ?string $nickname): void
   {
     if (!$this->sessionService->isUserLoggedIn()) {
@@ -234,17 +248,20 @@ class SecretsController extends BaseController
     }
   }
 
-  #[Post]
-  public function createSecret(
+  #[Post(':secretId(\d+)/comments')]
+  public function createComment(
+    #[Param]
+    #[Pipes([ParseIntPipe::class])]
+    int                                        $secretId,
     #[Header('Accept')] string|null            $accept,
     #[FormData("content")] string              $content,
     #[FormData("nickname", false)] string|null $nickname = null,
   ): void
   {
     if ($accept === "application/json") {
-      $this->createSecretJson($content, $nickname);
+      $this->createCommentJson($secretId, $content, $nickname);
     } else {
-      $this->createSecretHtml($content, $nickname);
+      $this->createCommentHtml($secretId, $content, $nickname);
     }
   }
 
@@ -323,23 +340,6 @@ class SecretsController extends BaseController
     } else {
       $this->redirectDelay($referer, 3);
       echo "Failed to publish comment";
-    }
-  }
-
-  #[Post(':secretId(\d+)/comments')]
-  public function createComment(
-    #[Param]
-    #[Pipes([ParseIntPipe::class])]
-    int                                        $secretId,
-    #[Header('Accept')] string|null            $accept,
-    #[FormData("content")] string              $content,
-    #[FormData("nickname", false)] string|null $nickname = null,
-  ): void
-  {
-    if ($accept === "application/json") {
-      $this->createCommentJson($secretId, $content, $nickname);
-    } else {
-      $this->createCommentHtml($secretId, $content, $nickname);
     }
   }
 

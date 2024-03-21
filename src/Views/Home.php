@@ -115,86 +115,86 @@ use Secra\Models\Secret;
 <script src="./scripts/load-more.js"></script>
 <script src="./scripts/dropdown.js"></script>
 <script>
-    function publishSecret(event) {
-        event.preventDefault();
-        const formEl = document.getElementById("publish-form");
-        const content = formEl.querySelector("#content").value;
-        const nickname = formEl.querySelector("#nickname").value;
-        // const imageInputEl = formEl.querySelector("#image-input");
-        // const images = imageInputEl.files;
-        const formData = new FormData();
-        formData.append("content", content);
-        formData.append("nickname", nickname);
-        // for (let i = 0; i < images.length; i++) {
-        //     formData.append("images[]", images[i], images[i].name);
-        // }
-        fetch("./secrets", {
-            method: "POST",
-            body: formData,
-            headers: {
-                'Accept': 'application/json',
-            }
-        })
-            .then(response => {
-                switch (response.status) {
-                    case 201:
-                        return response.json();
-                    case 401:
-                        alert("请先登录");
-                        window.location.href = "./users/login";
-                        break;
-                    default:
-                        return response.json().then(data => {
-                            throw new Error(data.message);
-                        });
-                }
-            })
-            .then(data => {
-                if (data.success) {
-                    refresh();
-                    formEl.querySelector("#content").value = "";
-                    formEl.querySelector("#nickname").value = "";
-                    // imageInputEl.value = "";
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                alert(error.message);
-            });
-    }
-
-    const publishFormEl = document.getElementById("publish-form");
-    publishFormEl.addEventListener("submit", publishSecret);
-
-    function refresh() {
-        fetch("./secrets")
-            .then(response => response.text())
-            .then(secretsHtml => {
-                const itemListEl = document.getElementById("secret-list");
-                itemListEl.innerHTML = secretsHtml;
-                window.initAttitudes();
-                window.initLoadMore();
-                window.initDropdown();
-            });
-    }
-
-    // const imageInputEl = document.getElementById("image-input");
-    // const selectedImages = [];
-    //
-    // function handleFileSelect(evt) {
-    //     const files = evt.target.files;
-    //     for (let i = 0, f;
-    //          (f = files[i]); i++) {
-    //         if (!f.type.match("image.*")) {
-    //             continue;
-    //         }
-    //         console.log(f);
-    //         selectedImages.push(f);
-    //     }
+  function publishSecret(event) {
+    event.preventDefault();
+    const formEl = document.getElementById("publish-form");
+    const content = formEl.querySelector("#content").value;
+    const nickname = formEl.querySelector("#nickname").value;
+    // const imageInputEl = formEl.querySelector("#image-input");
+    // const images = imageInputEl.files;
+    const formData = new FormData();
+    formData.append("content", content);
+    formData.append("nickname", nickname);
+    // for (let i = 0; i < images.length; i++) {
+    //     formData.append("images[]", images[i], images[i].name);
     // }
-    //
-    // imageInputEl.addEventListener("change", handleFileSelect);
+    fetch("./secrets", {
+      method: "POST",
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      }
+    })
+      .then(response => {
+        switch (response.status) {
+          case 201:
+            return response.json();
+          case 401:
+            alert("请先登录");
+            window.location.href = "./users/login";
+            break;
+          default:
+            return response.json().then(data => {
+              throw new Error(data.message);
+            });
+        }
+      })
+      .then(data => {
+        if (data.success) {
+          refresh();
+          formEl.querySelector("#content").value = "";
+          formEl.querySelector("#nickname").value = "";
+          // imageInputEl.value = "";
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
+
+  const publishFormEl = document.getElementById("publish-form");
+  publishFormEl.addEventListener("submit", publishSecret);
+
+  function refresh() {
+    fetch("./secrets")
+      .then(response => response.text())
+      .then(secretsHtml => {
+        const itemListEl = document.getElementById("secret-list");
+        itemListEl.innerHTML = secretsHtml;
+        window.initAttitudes();
+        window.initLoadMore();
+        window.initDropdown();
+      });
+  }
+
+  // const imageInputEl = document.getElementById("image-input");
+  // const selectedImages = [];
+  //
+  // function handleFileSelect(evt) {
+  //     const files = evt.target.files;
+  //     for (let i = 0, f;
+  //          (f = files[i]); i++) {
+  //         if (!f.type.match("image.*")) {
+  //             continue;
+  //         }
+  //         console.log(f);
+  //         selectedImages.push(f);
+  //     }
+  // }
+  //
+  // imageInputEl.addEventListener("change", handleFileSelect);
 </script>
 </body>
 

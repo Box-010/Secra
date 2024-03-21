@@ -34,8 +34,7 @@ use Secra\Models\User;
     <?php if ($isLoggedIn) : ?>
       <?php if ($comment->user_id === $currentUser->user_id) : ?>
         <form action="./secrets/<?= $secret->post_id ?>/comments/<?= $comment->comment_id ?>/edit" method="post"
-              enctype="multipart/form-data"
-              id="publish-form">
+              enctype="multipart/form-data" id="publish-form">
           <div class="card">
             <div class="card-content">
               <textarea class="post-textarea" placeholder="What's your problem?" id="content"

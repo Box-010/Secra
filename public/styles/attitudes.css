@@ -1,11 +1,11 @@
 .attitude-button[data-attituded="1"] .icon {
-    font-variation-settings: 'FILL' 1;
+  font-variation-settings: 'FILL' 1;
 }
 
 .attitude-button[data-attituded="1"] {
-    color: rgb(var(--theme-primary-color));
+  color: rgb(var(--theme-primary-color));
 }
 
 .attitude-button[data-count="0"] .attitude-button-count {
-    display: none;
+  display: none;
 }

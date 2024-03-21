@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var callable(string, array): string $render
  * @var bool $isLoggedIn
@@ -11,14 +12,14 @@
   <?= $render('Components/HtmlHead') ?>
   <title>发布秘语 | 隐境 Secra</title>
   <style>
-      .insert-image input {
-          display: none;
-      }
+    .insert-image input {
+      display: none;
+    }
 
-      .post-textarea {
-          min-height: 12rem;
-          resize: vertical;
-      }
+    .post-textarea {
+      min-height: 12rem;
+      resize: vertical;
+    }
   </style>
 </head>
 
@@ -93,22 +94,22 @@
 
 <script src="./scripts/input.js"></script>
 <script>
-    // const imageInputEl = document.getElementById("image-input");
-    // const selectedImages = [];
-    //
-    // function handleFileSelect(evt) {
-    //     const files = evt.target.files;
-    //     for (let i = 0, f;
-    //          (f = files[i]); i++) {
-    //         if (!f.type.match("image.*")) {
-    //             continue;
-    //         }
-    //         console.log(f);
-    //         selectedImages.push(f);
-    //     }
-    // }
-    //
-    // imageInputEl.addEventListener("change", handleFileSelect);
+  // const imageInputEl = document.getElementById("image-input");
+  // const selectedImages = [];
+  //
+  // function handleFileSelect(evt) {
+  //     const files = evt.target.files;
+  //     for (let i = 0, f;
+  //          (f = files[i]); i++) {
+  //         if (!f.type.match("image.*")) {
+  //             continue;
+  //         }
+  //         console.log(f);
+  //         selectedImages.push(f);
+  //     }
+  // }
+  //
+  // imageInputEl.addEventListener("change", handleFileSelect);
 </script>
 </body>
 

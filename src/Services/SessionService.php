@@ -40,6 +40,18 @@ class SessionService
     }
   }
 
+  public function validateSession(string $session_id): Session|null
+  {
+    $session = $this->sessionRepository->getSessionById($session_id);
+    if ($session) {
+      if (strtotime($session->expires_at) > time()) {
+        return $session;
+      }
+      $this->sessionRepository->delete($session_id);
+    }
+    return null;
+  }
+
   /**
    * Rotates the current session and changes the session id to enhance security
    */
@@ -73,36 +85,14 @@ class SessionService
     $this->logger->info('Rotated session id from ' . $current_session_id . ' to ' . $new_session_id);
   }
 
-  public function isUserLoggedIn(): bool
-  {
-    return $this->currentUser !== null;
-  }
-
-  public function validateSession(string $session_id): Session|null
-  {
-    $session = $this->sessionRepository->getSessionById($session_id);
-    if ($session) {
-      if (strtotime($session->expires_at) > time()) {
-        return $session;
-      }
-      $this->sessionRepository->delete($session_id);
-    }
-    return null;
-  }
-
-  public function getCurrentUser(): User|null
-  {
-    return $this->currentUser;
-  }
-
   public function getCurrentSession(): Session|null
   {
     return $this->currentSession;
   }
 
-  public function getCurrentUserId(): int|null
+  public function getCurrentUser(): User|null
   {
-    return $this->currentUser?->user_id;
+    return $this->currentUser;
   }
 
   public function createSession(string|User $user): Session
@@ -180,5 +170,15 @@ class SessionService
     session_destroy();
     $this->currentSession = null;
     $this->currentUser = null;
+  }
+
+  public function isUserLoggedIn(): bool
+  {
+    return $this->currentUser !== null;
+  }
+
+  public function getCurrentUserId(): int|null
+  {
+    return $this->currentUser?->user_id;
   }
 }

@@ -38,19 +38,19 @@ class UsersController extends BaseController
   #[Post('register')]
   public function register(): void
   {
-    $redirect = $_POST['redirect'] ?? '/';
+    $redirect = $_POST['redirect'] ?? '';
 
     $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
 
     $username = htmlspecialchars($_POST['username']);
 
     if ($this->userRepository->getUserByUsername($username)) {
-      $this->location('/users/register', 'Username already taken');
+      $this->location(PUBLIC_ROOT . 'users/register', 'Username already taken');
       return;
     }
 
     if ($this->userRepository->getUserByEmail($email)) {
-      $this->location('/users/register', 'Email already used');
+      $this->location(PUBLIC_ROOT . 'users/register', 'Email already used');
       return;
     }
 
@@ -64,7 +64,7 @@ class UsersController extends BaseController
 
     $this->userRepository->save($user);
     $this->sessionService->createSession($username);
-    $this->location($redirect);
+    $this->location(PUBLIC_ROOT . $redirect);
   }
 
   private function location(string $location, string|null $error = null): void
@@ -86,15 +86,15 @@ class UsersController extends BaseController
   #[Post('login')]
   public function login(): void
   {
-    $redirect = $_POST['redirect'] ?? '/';
+    $redirect = $_POST['redirect'] ?? '';
     $user = $this->userRepository->getUserByUsername($_POST['username']);
     if (!$user || !password_verify($_POST['password'] . $user->salt, $user->password)) {
-      $this->location('/users/login', 'Invalid username or password');
+      $this->location(PUBLIC_ROOT . 'users/login', 'Invalid username or password');
       return;
     }
 
     $this->sessionService->createSession($user);
-    $this->location($redirect);
+    $this->location(PUBLIC_ROOT . $redirect);
   }
 
   #[Get('logout')]
@@ -125,16 +125,6 @@ class UsersController extends BaseController
     ]);
   }
 
-  private function get_pdo_exception_message(PDOException $e): string
-  {
-    $code = $e->getCode();
-    if ($code === '23000') {
-      return 'User already exists';
-    }
-    $this->logger->error($e->getMessage());
-    return 'Internal error';
-  }
-
   #[Get('changepassword')]
   public function changepassword(): void
   {
@@ -146,7 +136,7 @@ class UsersController extends BaseController
   {
     $user = $this->userRepository->getUserByUsername($this->sessionService->getCurrentUser()->user_name);
     if (!$user || !password_verify($_POST['oldpassword'] . $user->salt, $user->password)) {
-      $this->location('./users/changepassword', 'Invalid password');
+      $this->location(PUBLIC_ROOT . 'users/changepassword', 'Invalid password');
       return;
     }
     $randomSalt = bin2hex(random_bytes(32));
@@ -155,6 +145,16 @@ class UsersController extends BaseController
     $this->userRepository->update($user);
     $this->sessionService->destroyAllSessions();
     //弹出修改成功
-    $this->location('./users/login', '密码修改成功，请重新登录');
+    $this->location(PUBLIC_ROOT . 'users/login', '密码修改成功，请重新登录');
+  }
+
+  private function get_pdo_exception_message(PDOException $e): string
+  {
+    $code = $e->getCode();
+    if ($code === '23000') {
+      return 'User already exists';
+    }
+    $this->logger->error($e->getMessage());
+    return 'Internal error';
   }
 }

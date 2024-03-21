@@ -72,7 +72,7 @@ use Secra\Models\User;
         <div class="auth-card">
           <div class="auth-card-content">
             <h1>请先登录</h1>
-            <a href="./users/login?redirect=/users/me" class="button button-primary">登录</a>
+            <a href="./users/login?redirect=users/me" class="button button-primary">登录</a>
           </div>
         </div>
       </div>

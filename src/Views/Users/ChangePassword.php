@@ -14,49 +14,46 @@
 </head>
 
 <body>
-    <main class="main auth-main">
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-card-image" id="auth-card-image"></div>
-                <div class="auth-card-content">
-                    <h1 class="auth-card-title">修改密码</h1>
-                    <form action="/users/changepassword" method="post" class="auth-card-form">
-                        <div class="textfield-wrapper">
-                            <div class="textfield">
-                                <!-- <span class="icon material-symbols-outlined"> lock </span> -->
-                                <input type="password" id="oldpassword" name="oldpassword" placeholder="请输入密码"
-                                    required />
-                                <label for="password">原密码</label>
-                            </div>
-                        </div>
-                        <div class="textfield-wrapper">
-                            <div class="textfield">
-                                <!-- <span class="icon material-symbols-outlined"> lock </span> -->
-                                <input type="password" id="newpassword" name="newpassword" placeholder="请输入新密码"
-                                    required />
-                                <label for="newpassword">新密码</label>
-                            </div>
-                            <div class="textfield-wrapper">
-                                <div class="textfield">
-                                    <!-- <span class="icon material-symbols-outlined"> lock </span> -->
-                                    <input type="password" id="confirmpassword" name="confirmpassword"
-                                        placeholder="请再次输入密码" required />
-                                    <label for="confirmpassword">确认密码</label>
-                                </div>
-                            </div>
-
-
-                            <div class="card-actions">
-                                <button class="button button-primary" type="submit">
-                                    <span class="button-text">修改密码</span>
-                                </button>
-                            </div>
-                    </form>
-                </div>
+<main class="main auth-main">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-card-image" id="auth-card-image"></div>
+      <div class="auth-card-content">
+        <h1 class="auth-card-title">修改密码</h1>
+        <form action="./users/changepassword" method="post" class="auth-card-form">
+          <div class="textfield-wrapper">
+            <div class="textfield">
+              <!-- <span class="icon material-symbols-outlined"> lock </span> -->
+              <input type="password" id="oldpassword" name="oldpassword" placeholder="请输入密码" required/>
+              <label for="password">原密码</label>
             </div>
-        </div>
-    </main>
-    <?= $render('Components/Footer') ?>
+          </div>
+          <div class="textfield-wrapper">
+            <div class="textfield">
+              <!-- <span class="icon material-symbols-outlined"> lock </span> -->
+              <input type="password" id="newpassword" name="newpassword" placeholder="请输入新密码" required/>
+              <label for="newpassword">新密码</label>
+            </div>
+            <div class="textfield-wrapper">
+              <div class="textfield">
+                <!-- <span class="icon material-symbols-outlined"> lock </span> -->
+                <input type="password" id="confirmpassword" name="confirmpassword" placeholder="请再次输入密码"
+                       required/>
+                <label for="confirmpassword">确认密码</label>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="button button-primary" type="submit">
+                <span class="button-text">修改密码</span>
+              </button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+<?= $render('Components/Footer') ?>
 
     <script src="./scripts/random-bg.js"></script>
     <script src="./scripts/input.js"></script>

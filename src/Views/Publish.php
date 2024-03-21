@@ -81,7 +81,7 @@
             <div class="auth-card-image" id="auth-card-image"></div>
             <div class="auth-card-content">
               <h1>请先登录</h1>
-              <a href="./users/login?redirect=/publish" class="button button-primary">登录</a>
+              <a href="./users/login?redirect=publish" class="button button-primary">登录</a>
             </div>
           </div>
         </div>

@@ -71,8 +71,12 @@ $router->registerGlobalErrorHandler(function (Exception $e) use ($container) {
 });
 
 $routeStr = $_GET["route"] ?? "";
-//$routeStr = rtrim($routeStr, '/');
-//$routeStr = '/' . ltrim($routeStr, '/');
+$routeStr = '/' . trim($routeStr, '/');
+$publicRoot = rtrim(PUBLIC_ROOT, '/');
+if (str_starts_with($routeStr, $publicRoot)) {
+  $routeStr = substr($routeStr, strlen($publicRoot));
+}
+$routeStr = trim($routeStr, '/');
 
 $logger = $container->get(ILogger::class);
 $logger->info("Route: $routeStr");

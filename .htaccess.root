@@ -2,7 +2,6 @@
     RewriteEngine On
     RewriteBase /
 
-    # 检查文件是否在public目录下存在，如果存在则重定向到public目录下
     RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
     RewriteRule ^(.*)$ public/$1 [L]
 

@@ -13,6 +13,19 @@ try {
   exit;
 }
 
+// 创建用户并授权
+try {
+  $sql = "CREATE USER IF NOT EXISTS '" . DB_USER . "'@'" . DB_HOST . "' IDENTIFIED BY '" . DB_PASS . "'";
+  $conn->exec($sql);
+  echo "User created successfully<br>";
+  $sql = "GRANT ALL PRIVILEGES ON " . DB_NAME . ".* TO '" . DB_USER . "'@'" . DB_HOST . "'";
+  $conn->exec($sql);
+  echo "User granted successfully<br>";
+} catch (PDOException $e) {
+  echo $sql . "<br>" . $e->getMessage();
+  exit;
+}
+
 // 创建数据库
 try {
   $sql = "CREATE DATABASE IF NOT EXISTS " . DB_NAME . " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
@@ -51,7 +64,8 @@ try {
 try {
   $sql = "CREATE TABLE IF NOT EXISTS roles (
     role_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(50) UNIQUE NOT NULL
+    role_name VARCHAR(50) UNIQUE NOT NULL,
+    parent_role_id INT UNSIGNED DEFAULT NULL
   );";
   $conn->exec($sql);
   echo "Table roles created successfully<br>";
@@ -68,7 +82,7 @@ try {
   // 创建默认角色
   $sql = "INSERT INTO roles (role_name) VALUES ('user')";
   $conn->exec($sql);
-  $sql = "INSERT INTO roles (role_name) VALUES ('admin')";
+  $sql = "INSERT INTO roles (role_name, parent_role_id) VALUES ('admin', 1)";
   $conn->exec($sql);
   echo "Default role created successfully<br>";
 
@@ -85,7 +99,9 @@ try {
 try {
   $sql = "CREATE TABLE IF NOT EXISTS permissions (
     permission_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    permission_name VARCHAR(50) UNIQUE NOT NULL
+    resource_name VARCHAR(50),
+    permission_name VARCHAR(50) NOT NULL,
+    UNIQUE KEY (resource_name, permission_name)
   );";
   $conn->exec($sql);
   echo "Table permissions created successfully<br>";
@@ -99,20 +115,26 @@ try {
   $conn->exec($sql);
   echo "Table role_permissions created successfully<br>";
 
-  // // 创建默认权限
-  // $sql = "INSERT INTO permissions (permission_name) VALUES ('posts.create')";
-  // $conn->exec($sql);
-  // $sql = "INSERT INTO permissions (permission_name) VALUES ('posts.update')";
-  // $conn->exec($sql);
-  // $sql = "INSERT INTO permissions (permission_name) VALUES ('posts.delete')";
-  // $conn->exec($sql);
-  // $sql = "INSERT INTO permissions (permission_name) VALUES ('comments.create')";
-  // $conn->exec($sql);
-  // $sql = "INSERT INTO permissions (permission_name) VALUES ('comments.delete')";
-  // $conn->exec($sql);
-  // echo "Default permission created successfully<br>";
+  // 创建默认权限
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('users', 'read')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('users', 'manage')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('secrets', 'read')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('secrets', 'create')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('secrets', 'delete')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('comments', 'read')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('comments', 'create')";
+  $conn->exec($sql);
+  $sql = "INSERT INTO permissions (resource_name, permission_name) VALUES ('comments', 'delete')";
+  $conn->exec($sql);
+  echo "Default permission created successfully<br>";
 
-  // // 分配默认权限
+  // 分配默认权限
   // $sql = "INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 1)";
   // $conn->exec($sql);
   // $sql = "INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 4)";
@@ -216,19 +238,6 @@ try {
   );";
   $conn->exec($sql);
   echo "Table images created successfully<br>";
-} catch (PDOException $e) {
-  echo $sql . "<br>" . $e->getMessage();
-  exit;
-}
-
-// 创建用户并授权
-try {
-  $sql = "CREATE USER IF NOT EXISTS '" . DB_USER . "'@'" . DB_HOST . "' IDENTIFIED BY '" . DB_PASS . "'";
-  $conn->exec($sql);
-  echo "User created successfully<br>";
-  $sql = "GRANT ALL PRIVILEGES ON " . DB_NAME . ".* TO '" . DB_USER . "'@'" . DB_HOST . "'";
-  $conn->exec($sql);
-  echo "User granted successfully<br>";
 } catch (PDOException $e) {
   echo $sql . "<br>" . $e->getMessage();
   exit;

@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /team5
+
+    RewriteCond %{DOCUMENT_ROOT}/team5/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Redirect install folder to install.php
+    RewriteRule ^install/(.*)$ install.php?route=$1 [L,QSA]
+
+    # Redirect requests to index.php if an existing file or directory is not found
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]
+</IfModule>

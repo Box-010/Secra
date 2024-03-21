@@ -15,6 +15,8 @@ class Comment
   public int $user_id;
   public User $user;
 
+  public int $floor;
+
   public string $created_at;
   public string $updated_at;
   public int $positive_count;

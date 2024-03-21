@@ -29,7 +29,6 @@ try {
 // 创建数据库
 try {
   $sql = "CREATE DATABASE IF NOT EXISTS " . DB_NAME . " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-  // 使用 exec() ，没有结果返回
   $conn->exec($sql);
   echo "Database created successfully<br>";
 } catch (PDOException $e) {
@@ -256,6 +255,28 @@ try {
   GROUP BY users.user_id;";
   $conn->exec($sql);
   echo "View v_user created successfully<br>";
+
+  $sql = "CREATE VIEW v_secret AS
+  SELECT
+    posts.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
+  (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.post_id) AS comment_count,
+  (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = posts.post_id) AS positive_count,
+  (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'secrets' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = posts.post_id) AS negative_count
+  FROM posts
+  INNER JOIN users u on posts.author_id = u.user_id;";
+  $conn->exec($sql);
+  echo "View v_secret created successfully<br>";
+
+  $sql = "CREATE VIEW v_comment AS
+  SELECT
+    comments.*, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
+    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = comments.post_id) AS positive_count,
+    (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = comments.post_id) AS negative_count,
+    (SELECT COUNT(*) FROM comments AS c WHERE c.post_id = comments.post_id AND c.comment_id <= comments.comment_id) AS floor
+  FROM comments
+  INNER JOIN users u on comments.user_id = u.user_id;";
+  $conn->exec($sql);
+  echo "View v_comment created successfully<br>";
 } catch (PDOException $e) {
   echo $sql . "<br>" . $e->getMessage();
   exit;

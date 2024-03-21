@@ -14,10 +14,11 @@ use Secra\Models\User;
 <div class="card item-card" data-item-type="comments" data-item-id="<?= $comment->comment_id ?>">
   <div class="card-content">
     <div class="item-info">
+      <div class="item-info-text">#<?= $comment->floor ?></div>
       <?php if ($comment->nickname) : ?>
         <div class="item-info-text"><?= $comment->nickname ?></div>
       <?php endif; ?>
-      <!--      <div class="spacer"></div>-->
+      <div class="spacer"></div>
       <div class="item-info-text">回复于 <?= $comment->created_at ?></div>
     </div>
     <div class="post-content">

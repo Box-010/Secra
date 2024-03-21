@@ -17,6 +17,24 @@ class CommentsRepository extends BaseRepository
   #[Inject] private AttitudesRepository $attitudesRepository;
   #[Inject] private SessionService $sessionService;
 
+  public function getCommentsByPostId(
+    int $post_id,
+    int $limit = 10,
+    int $offset = 0
+  ): array
+  {
+    $stmt = $this->db->query("SELECT * FROM v_comment
+    WHERE post_id = ?
+    ORDER BY created_at DESC
+    LIMIT $limit OFFSET $offset;", [$post_id]);
+    if (!$stmt) {
+      $this->logger->error('Failed to get comments: ' . $this->db->lastError()->getMessage());
+      return [];
+    }
+    $stmt->setFetchMode(PDO::FETCH_CLASS, Comment::class);
+    return $this->resolveCommentsAttitudeStatus($stmt->fetchAll());
+  }
+
   private function resolveCommentsAttitudeStatus(array $comments): array
   {
     return array_map(fn(Comment $comment) => $this->resolveCommentAttitudeStatus($comment), $comments);
@@ -31,34 +49,15 @@ class CommentsRepository extends BaseRepository
     return $comment;
   }
 
-  public function getCommentsByPostId(
-    int $post_id,
-    int $limit = 10,
-    int $offset = 0
-  ): array
-  {
-    $stmt = $this->db->query("SELECT
-        comments.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = comments.post_id) AS positive_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = comments.post_id) AS negative_count
-    FROM comments
-    INNER JOIN users u ON comments.user_id = u.user_id
-    WHERE comments.post_id = ?
-    ORDER BY comments.created_at DESC
-    LIMIT $limit OFFSET $offset;", [$post_id]);
-    $stmt->setFetchMode(PDO::FETCH_CLASS, Comment::class);
-    return $this->resolveCommentsAttitudeStatus($stmt->fetchAll());
-  }
-
   public function countCommentsByPostId(int $post_id): int
   {
-    $stmt = $this->db->query("SELECT COUNT(*) FROM comments WHERE post_id = ?", [$post_id]);
+    $stmt = $this->db->query("SELECT COUNT(*) FROM v_comment WHERE post_id = ?", [$post_id]);
     return $stmt->fetchColumn();
   }
 
   public function countCommentsByUserId(int $user_id): int
   {
-    $stmt = $this->db->query("SELECT COUNT(*) FROM comments WHERE user_id = ?", [$user_id]);
+    $stmt = $this->db->query("SELECT COUNT(*) FROM v_comment WHERE user_id = ?", [$user_id]);
     return $stmt->fetchColumn();
   }
 
@@ -79,13 +78,8 @@ class CommentsRepository extends BaseRepository
 
   public function getCommentById(int $comment_id): Comment|bool
   {
-    $stmt = $this->db->query("SELECT
-      comments.*, u.user_id, u.user_name, u.email AS user_email, u.created_at AS user_created_at,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'positive' AND attitudes.attitudeable_id = comments.post_id) AS positive_count,
-      (SELECT COUNT(*) FROM attitudes WHERE attitudes.attitudeable_type = 'comments' AND attitudes.attitude_type = 'negative' AND attitudes.attitudeable_id = comments.post_id) AS negative_count
-    FROM comments
-    INNER JOIN users u on comments.user_id = u.user_id
-    WHERE comments.comment_id = ?;", [$comment_id]);
+    $stmt = $this->db->query("SELECT * FROM v_comment
+    WHERE comment_id = ?;", [$comment_id]);
     $stmt->setFetchMode(PDO::FETCH_CLASS, Comment::class);
     return $this->resolveCommentAttitudeStatus($stmt->fetch());
   }

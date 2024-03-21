@@ -39,9 +39,11 @@ $container->registerAll(
   SecretsRepository::class,
   AttitudesRepository::class,
   CommentsRepository::class,
+  ImageRepository::class,
   SessionService::class,
   PermissionService::class,
   CaptchaService::class,
+  ImageService::class,
   Router::class
 );
 

@@ -39,6 +39,7 @@ use Secra\Models\Secret;
           <div class="card" id="publish">
             <div class="card-content">
               <textarea class="post-textarea" placeholder="What's your problem?" id="content" name="content"></textarea>
+              <div id="image-preview" class="preview-images-container"></div>
             </div>
             <div class="card-actions">
               <div class="textfield-wrapper textfield-wrapper--dense">
@@ -50,16 +51,16 @@ use Secra\Models\Secret;
 
               <div class="spacer"></div>
 
-              <!--              <div class="badge">-->
-              <!--                <div class="insert-image">-->
-              <!--                  <input type="file" id="image-input" name="image" accept="image/*" multiple/>-->
-              <!--                  <label class="button button-icon" for="image-input">-->
-              <!--                  <span class="icon material-symbols-outlined">-->
-              <!--                    add_photo_alternate-->
-              <!--                  </span>-->
-              <!--                  </label>-->
-              <!--                </div>-->
-              <!--              </div>-->
+              <div class="badge">
+                <div class="insert-image">
+                  <input type="file" id="image-input" name="image" accept="image/*" multiple/>
+                  <label class="button button-icon" for="image-input">
+                    <span class="icon material-symbols-outlined">
+                      add_photo_alternate
+                    </span>
+                  </label>
+                </div>
+              </div>
               <button type="submit" class="button button-primary" id="publish-btn">
                 发布
               </button>
@@ -115,20 +116,56 @@ use Secra\Models\Secret;
 <script src="./scripts/load-more.js"></script>
 <script src="./scripts/dropdown.js"></script>
 <script>
-  function publishSecret(event) {
-    event.preventDefault();
-    const formEl = document.getElementById("publish-form");
-    const content = formEl.querySelector("#content").value;
-    const nickname = formEl.querySelector("#nickname").value;
-    // const imageInputEl = formEl.querySelector("#image-input");
-    // const images = imageInputEl.files;
+  const publishFormEl = document.getElementById("publish-form");
+  const imageInputEl = document.getElementById("image-input");
+  const imagePreviewEl = document.getElementById("image-preview");
+
+  publishFormEl.addEventListener("submit", submitSecret);
+  const selectedImages = [];
+  const previewImages = [];
+
+  function uploadImage(image) {
+    const formData = new FormData();
+    formData.append("image", image);
+    return fetch("./images", {
+      method: "POST",
+      body: formData,
+      headers: {
+        // 'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json',
+      }
+    })
+      .then(response => {
+        switch (response.status) {
+          case 201:
+            return response.json();
+          default:
+            return response.json().then(data => {
+              throw new Error(data.message);
+            });
+        }
+      });
+  }
+
+  function clearImages() {
+    selectedImages.splice(0, selectedImages.length);
+    previewImages.splice(0, previewImages.length);
+    imagePreviewEl.innerHTML = "";
+  }
+
+  function publish(content, nickname, imageIds = []) {
+    if (imageIds.length < selectedImages.length) {
+      return Promise.all(selectedImages.map(uploadImage))
+        .then(data => {
+          imageIds.push(...data.map(item => item.imageId));
+          return publish(content, nickname, imageIds);
+        });
+    }
     const formData = new FormData();
     formData.append("content", content);
     formData.append("nickname", nickname);
-    // for (let i = 0; i < images.length; i++) {
-    //     formData.append("images[]", images[i], images[i].name);
-    // }
-    fetch("./secrets", {
+    formData.append("imageIds", JSON.stringify(imageIds));
+    return fetch("./secrets", {
       method: "POST",
       body: formData,
       headers: {
@@ -140,21 +177,34 @@ use Secra\Models\Secret;
           case 201:
             return response.json();
           case 401:
-            alert("请先登录");
             window.location.href = "./users/login";
-            break;
+            throw new Error("请先登录");
           default:
             return response.json().then(data => {
               throw new Error(data.message);
             });
         }
       })
+  }
+
+  function submitSecret(event) {
+    event.preventDefault();
+    const formEl = document.getElementById("publish-form");
+    const content = formEl.querySelector("#content").value;
+    const nickname = formEl.querySelector("#nickname").value;
+
+    if (!content) {
+      alert("内容不能为空");
+      return;
+    }
+
+    publish(content, nickname)
       .then(data => {
         if (data.success) {
           refresh();
           formEl.querySelector("#content").value = "";
           formEl.querySelector("#nickname").value = "";
-          // imageInputEl.value = "";
+          clearImages();
         } else {
           alert(data.message);
         }
@@ -163,9 +213,6 @@ use Secra\Models\Secret;
         alert(error.message);
       });
   }
-
-  const publishFormEl = document.getElementById("publish-form");
-  publishFormEl.addEventListener("submit", publishSecret);
 
   function refresh() {
     fetch("./secrets")
@@ -179,22 +226,77 @@ use Secra\Models\Secret;
       });
   }
 
-  // const imageInputEl = document.getElementById("image-input");
-  // const selectedImages = [];
-  //
-  // function handleFileSelect(evt) {
-  //     const files = evt.target.files;
-  //     for (let i = 0, f;
-  //          (f = files[i]); i++) {
-  //         if (!f.type.match("image.*")) {
-  //             continue;
-  //         }
-  //         console.log(f);
-  //         selectedImages.push(f);
-  //     }
-  // }
-  //
-  // imageInputEl.addEventListener("change", handleFileSelect);
+  function addImage(image) {
+    selectedImages.push(image);
+    const reader = new FileReader();
+    reader.onload = (function (theFile) {
+      return function (e) {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.title = theFile.name;
+        img.className = "preview-image";
+        previewImages.push(img);
+        const previewEl = document.createElement("div");
+        previewEl.className = "preview";
+        previewEl.appendChild(img);
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "button button-icon";
+        removeBtn.innerHTML = '<span class="icon material-symbols-outlined"> close </span>';
+        removeBtn.onclick = function () {
+          selectedImages.splice(selectedImages.indexOf(theFile), 1);
+          previewImages.splice(previewImages.indexOf(img), 1);
+          previewEl.remove();
+        };
+        previewEl.appendChild(removeBtn);
+        imagePreviewEl.appendChild(previewEl);
+      };
+    })(image);
+
+    reader.readAsDataURL(image);
+  }
+
+  function handleFileSelect(evt) {
+    const files = evt.target.files;
+    for (let i = 0, f;
+         (f = files[i]); i++) {
+      if (!f.type.match("image.*")) {
+        continue;
+      }
+      if (selectedImages.length >= 9) {
+        alert("最多只能上传9张图片");
+        return;
+      }
+      selectedImages.push(f);
+
+      const reader = new FileReader();
+      reader.onload = (function (theFile) {
+        return function (e) {
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.title = theFile.name;
+          img.className = "preview-image";
+          previewImages.push(img);
+          const previewEl = document.createElement("div");
+          previewEl.className = "preview";
+          previewEl.appendChild(img);
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "button button-icon";
+          removeBtn.innerHTML = '<span class="icon material-symbols-outlined"> close </span>';
+          removeBtn.onclick = function () {
+            selectedImages.splice(selectedImages.indexOf(theFile), 1);
+            previewImages.splice(previewImages.indexOf(img), 1);
+            previewEl.remove();
+          };
+          previewEl.appendChild(removeBtn);
+          imagePreviewEl.appendChild(previewEl);
+        };
+      })(f);
+
+      reader.readAsDataURL(f);
+    }
+  }
+
+  imageInputEl.addEventListener("change", handleFileSelect);
 </script>
 </body>
 

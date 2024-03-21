@@ -11,6 +11,8 @@ class Secret
   public string|null $nickname;
   public int $author_id;
   public User $author;
+  public array $images;
+  public array $image_urls;
 
   public string $created_at;
   public string $updated_at;
@@ -32,6 +34,8 @@ class Secret
       $this->author->email = $value;
     } elseif ($name === 'user_created_at') {
       $this->author->created_at = $value;
+    } elseif ($name === 'image_ids') {
+      $this->images = json_decode($value);
     }
   }
 }

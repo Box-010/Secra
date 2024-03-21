@@ -2,6 +2,7 @@
 
 namespace Secra\Controllers;
 
+use JsonException;
 use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
@@ -171,16 +172,21 @@ class SecretsController extends BaseController
     #[Header('Accept')] string|null            $accept,
     #[FormData("content")] string              $content,
     #[FormData("nickname", false)] string|null $nickname = null,
+    #[FormData("imageIds", false)] string|null $imageIdsJson = null,
   ): void
   {
     if ($accept === "application/json") {
-      $this->createSecretJson($content, $nickname);
+      $this->createSecretJson($content, $nickname, $imageIdsJson);
     } else {
-      $this->createSecretHtml($content, $nickname);
+      $this->createSecretHtml($content, $nickname, $imageIdsJson);
     }
   }
 
-  private function createSecretJson(string $content, ?string $nickname): void
+  private function createSecretJson(
+    string  $content,
+    ?string $nickname,
+    ?string $imageIdsJson
+  ): void
   {
     if (!$this->sessionService->isUserLoggedIn()) {
       $this->json(
@@ -196,12 +202,22 @@ class SecretsController extends BaseController
       );
       return;
     }
+    try {
+      $imageIds = json_decode($imageIdsJson);
+    } catch (JsonException $e) {
+      $this->json(
+        ["success" => false, "message" => "Invalid image IDs"],
+        400
+      );
+      return;
+    }
     $encoded_content = htmlentities($content, ENT_QUOTES);
     $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
     $secret = new Secret();
     $secret->author_id = $this->sessionService->getCurrentUser()->user_id;
     $secret->content = $encoded_content;
     $secret->nickname = $encoded_nickname;
+    $secret->images = $imageIds;
     if ($secret = $this->secretsRepository->save($secret)) {
       $this->json(
         [
@@ -221,17 +237,28 @@ class SecretsController extends BaseController
     }
   }
 
-  private function createSecretHtml(string $content, ?string $nickname): void
+  private function createSecretHtml(
+    string  $content,
+    ?string $nickname,
+    ?string $imageIdsJson
+  ): void
   {
+    $referer = $_SERVER['HTTP_REFERER'];
     if (!$this->sessionService->isUserLoggedIn()) {
       $this->redirectDelay(PUBLIC_ROOT . "users/login", 3);
       echo "You must be logged in to publish a secret";
       return;
     }
-    $referer = $_SERVER['HTTP_REFERER'];
     if (empty($content)) {
       $this->redirectDelay($referer, 3);
       echo "Content cannot be empty";
+      return;
+    }
+    try {
+      $imageIds = json_decode($imageIdsJson);
+    } catch (JsonException $e) {
+      $this->redirectDelay($referer, 3);
+      echo "Invalid image IDs";
       return;
     }
     $encoded_content = htmlentities($content, ENT_QUOTES);
@@ -240,6 +267,7 @@ class SecretsController extends BaseController
     $secret->author_id = $this->sessionService->getCurrentUser()->user_id;
     $secret->content = $encoded_content;
     $secret->nickname = $encoded_nickname;
+    $secret->images = $imageIds;
     if ($secret = $this->secretsRepository->save($secret)) {
       $this->redirect(PUBLIC_ROOT . "secrets/{$secret->post_id}");
     } else {

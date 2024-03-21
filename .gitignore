@@ -1,5 +1,6 @@
 config
 logs
+usr/uploads/**
 
 .idea
-.htaccess
+/.htaccess

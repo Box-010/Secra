@@ -29,6 +29,15 @@ $cardTag = $link ? 'a' : 'div';
   <div class="post-content">
     <?= $secret->content ?>
   </div>
+  <?php if (!empty($secret->image_urls)) : ?>
+    <div class="preview-images-container">
+      <?php foreach ($secret->image_urls as $image) : ?>
+        <div class="preview">
+          <img src="<?= $image ?>" alt="图片" class="preview-image">
+        </div>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
 </div>
 <div class="card-actions">
   <?= $render('Components/AttitudeButton', [

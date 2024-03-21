@@ -16,6 +16,7 @@ use Secra\Services\SessionService;
 class SecretsRepository extends BaseRepository
 {
   #[Inject] private AttitudesRepository $attitudesRepository;
+  #[Inject] private ImageRepository $imageRepository;
   #[Inject] private SessionService $sessionService;
 
   /**
@@ -42,8 +43,8 @@ class SecretsRepository extends BaseRepository
     }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
     $secrets = $stmt->fetchAll();
-
-    return $this->resolveSecretsAttitudeStatus($secrets);
+    $secrets = $this->resolveSecretsAttitudeStatus($secrets);
+    return $this->resolveSecretsImageUrls($secrets);
   }
 
   private function resolveSecretsAttitudeStatus(array $secrets): array
@@ -57,6 +58,17 @@ class SecretsRepository extends BaseRepository
       $userId = $this->sessionService->getCurrentSession()->user_id;
       $secret->user_attitude = $this->attitudesRepository->queryUserAttitude(AttitudeableType::SECRETS, $secret->post_id, $userId);
     }
+    return $secret;
+  }
+
+  private function resolveSecretsImageUrls(array $secrets): array
+  {
+    return array_map(fn(Secret $secret) => $this->resolveSecretImageUrls($secret), $secrets);
+  }
+
+  private function resolveSecretImageUrls(Secret $secret): Secret
+  {
+    $secret->image_urls = array_map(fn($image) => PUBLIC_ROOT . 'usr/uploads/' . $this->imageRepository->get($image), $secret->images);
     return $secret;
   }
 
@@ -91,8 +103,9 @@ class SecretsRepository extends BaseRepository
     }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
     $secrets = $stmt->fetchAll();
+    $secrets = $this->resolveSecretsAttitudeStatus($secrets);
 
-    return $this->resolveSecretsAttitudeStatus($secrets);
+    return $this->resolveSecretsImageUrls($secrets);
   }
 
   /**
@@ -127,8 +140,9 @@ class SecretsRepository extends BaseRepository
     }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
     $secrets = $stmt->fetchAll();
+    $secrets = $this->resolveSecretsAttitudeStatus($secrets);
 
-    return $this->resolveSecretsAttitudeStatus($secrets);
+    return $this->resolveSecretsImageUrls($secrets);
   }
 
   public function countBySearchQuery(string $query): int
@@ -164,10 +178,11 @@ class SecretsRepository extends BaseRepository
    */
   public function save(Secret $secret): Secret|false
   {
-    $stmt = $this->db->query("INSERT INTO posts (author_id, content, nickname) VALUES (:authorId, :content, :nickname)", [
+    $stmt = $this->db->query("INSERT INTO posts (author_id, content, nickname, image_ids) VALUES (:authorId, :content, :nickname, :imageIds)", [
       'authorId' => $secret->author_id,
       'content' => $secret->content,
-      'nickname' => $secret->nickname
+      'nickname' => $secret->nickname,
+      'imageIds' => json_encode($secret->images)
     ]);
     if ($stmt->rowCount() > 0) {
       return $this->getById($this->db->lastInsertId());
@@ -190,7 +205,12 @@ class SecretsRepository extends BaseRepository
       return false;
     }
     $stmt->setFetchMode(PDO::FETCH_CLASS, Secret::class);
-    return $this->resolveSecretAttitudeStatus($stmt->fetch());
+    $secret = $stmt->fetch();
+    if ($secret) {
+      $secret = $this->resolveSecretAttitudeStatus($secret);
+      $secret = $this->resolveSecretImageUrls($secret);
+    }
+    return $secret;
   }
 
   /**

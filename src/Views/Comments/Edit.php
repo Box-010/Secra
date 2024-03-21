@@ -23,7 +23,7 @@ use Secra\Models\User;
 
 <body>
 <header class="header">
-  <a class="button button-icon" href="./">
+  <a class="button button-icon" href="./secrets/<?= $secret->post_id ?>">
     <span class="icon material-symbols-outlined"> arrow_back </span>
   </a>
   <span class="header-title">编辑评论</span>

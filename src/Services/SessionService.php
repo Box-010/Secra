@@ -162,4 +162,23 @@ class SessionService
     $this->currentSession = null;
     $this->currentUser = null;
   }
+
+  public function destroyAllSessions(): void
+  {
+    if (!$this->isUserLoggedIn()) {
+      return;
+    }
+    $this->sessionRepository->deleteAllByUserId($this->getCurrentUserId());
+    setcookie('session_id', '', [
+      "expires" => time() - 3600,
+      "path" => "/",
+      "domain" => "",
+      "secure" => false,
+      "httponly" => true,
+      "samesite" => "Lax"
+    ]);
+    session_destroy();
+    $this->currentSession = null;
+    $this->currentUser = null;
+  }
 }

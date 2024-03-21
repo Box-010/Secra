@@ -52,4 +52,10 @@ class SessionRepository extends BaseRepository
   {
     $this->db->query('DELETE FROM sessions WHERE session_id = ?', [$session_id]);
   }
+
+  public function deleteAllByUserId(int $user_id): int
+  {
+    $stmt = $this->db->query('DELETE FROM sessions WHERE user_id = ?', [$user_id]);
+    return $stmt->rowCount();
+  }
 }

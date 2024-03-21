@@ -172,10 +172,11 @@ try {
   $sql = "CREATE TABLE IF NOT EXISTS comments (
     comment_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     content TEXT NOT NULL,
+    nickname TEXT DEFAULT NULL,
     user_id INT UNSIGNED,
     post_id INT UNSIGNED,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    parent_comment_id INT UNSIGNED,
+    parent_comment_id INT UNSIGNED DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (post_id) REFERENCES posts(post_id)
   );";

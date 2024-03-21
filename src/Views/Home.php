@@ -154,7 +154,7 @@ use Secra\Models\Secret;
                     refresh();
                     formEl.querySelector("#content").value = "";
                     formEl.querySelector("#nickname").value = "";
-                    imageInputEl.value = "";
+                    // imageInputEl.value = "";
                 } else {
                     alert(data.message);
                 }

@@ -12,6 +12,7 @@ use Secra\Arch\Router\Attributes\Get;
 use Secra\Arch\Router\Attributes\Post;
 use Secra\Arch\Router\BaseController;
 use Secra\Models\User;
+use Secra\Repositories\CommentsRepository;
 use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\UserRepository;
 use Secra\Services\SessionService;
@@ -24,6 +25,7 @@ class UsersController extends BaseController
 {
   #[Inject] private UserRepository $userRepository;
   #[Inject] private SecretsRepository $secretsRepository;
+  #[Inject] private CommentsRepository $commentsRepository;
   #[Inject] private SessionService $sessionService;
   #[Inject] private ILogger $logger;
 
@@ -114,13 +116,12 @@ class UsersController extends BaseController
     if ($this->sessionService->isUserLoggedIn()) {
       $mySecrets = $this->secretsRepository->getByUserId($this->sessionService->getCurrentUserId());
       $secretCount = $this->secretsRepository->countByUserId($this->sessionService->getCurrentUserId());
-    } else {
-      $mySecrets = [];
-      $secretCount = 0;
+      $commentCount = $this->commentsRepository->countCommentsByUserId($this->sessionService->getCurrentUserId());
     }
     $this->templateEngine->render('Views/Users/Me', [
-      'mySecrets' => $mySecrets,
-      'secretCount' => $secretCount
+      'mySecrets' => $mySecrets ?? [],
+      'secretCount' => $secretCount ?? 0,
+      'commentCount' => $commentCount ?? 0
     ]);
   }
 
@@ -133,6 +134,7 @@ class UsersController extends BaseController
     $this->logger->error($e->getMessage());
     return 'Internal error';
   }
+
   #[Get('changepassword')]
   public function changepassword(): void
   {
@@ -144,14 +146,15 @@ class UsersController extends BaseController
   {
     $user = $this->userRepository->getUserByUsername($this->sessionService->getCurrentUser()->user_name);
     if (!$user || !password_verify($_POST['oldpassword'] . $user->salt, $user->password)) {
-      $this->location('/users/changepassword', 'Invalid password');
+      $this->location('./users/changepassword', 'Invalid password');
       return;
     }
     $randomSalt = bin2hex(random_bytes(32));
     $user->password = password_hash($_POST['newpassword'] . $randomSalt, PASSWORD_DEFAULT);
     $user->salt = $randomSalt;
     $this->userRepository->update($user);
+    $this->sessionService->destroyAllSessions();
     //弹出修改成功
-    $this->location('/users/me', 'Password changed');
+    $this->location('./users/login', '密码修改成功，请重新登录');
   }
 }

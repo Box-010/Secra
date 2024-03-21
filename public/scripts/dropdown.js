@@ -52,6 +52,36 @@
                     });
             }
         },
+        "edit-comment": (id) => {
+            const [secretId, commentId] = id.split('/');
+            window.location.href = `./secrets/${secretId}/comments/${commentId}/edit`;
+        },
+        "delete-comment": (id) => {
+            const confirmed = confirm('你确定要删除这条评论吗？');
+            if (confirmed) {
+                const [secretId, commentId] = id.split('/');
+                fetch(`./secrets/${secretId}/comments/${commentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-HTTP-Method-Override': 'DELETE',
+                    },
+                })
+                    .then((res) => {
+                        if (res.status === 200) {
+                            // document.querySelectorAll(`.item-card[data-item-type="comments"][data-item-id="${id}"]`).forEach((el) => {
+                            //     el.remove();
+                            // });
+                            if ("refresh" in window) {
+                                window.refresh();
+                            } else {
+                                window.location.reload();
+                            }
+                        } else {
+                            alert('删除失败');
+                        }
+                    });
+            }
+        }
     }
 
     const initDropdown = () => {

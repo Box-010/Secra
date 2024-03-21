@@ -8,13 +8,16 @@ use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
 use Secra\Arch\Logger\ILogger;
 use Secra\Arch\Router\Attributes\Controller;
+use Secra\Arch\Router\Attributes\FormData;
 use Secra\Arch\Router\Attributes\Get;
+use Secra\Arch\Router\Attributes\Header;
 use Secra\Arch\Router\Attributes\Post;
 use Secra\Arch\Router\BaseController;
 use Secra\Models\User;
 use Secra\Repositories\CommentsRepository;
 use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\UserRepository;
+use Secra\Services\CaptchaService;
 use Secra\Services\SessionService;
 
 
@@ -27,6 +30,7 @@ class UsersController extends BaseController
   #[Inject] private SecretsRepository $secretsRepository;
   #[Inject] private CommentsRepository $commentsRepository;
   #[Inject] private SessionService $sessionService;
+  #[Inject] private CaptchaService $captchaService;
   #[Inject] private ILogger $logger;
 
   #[Get('register')]
@@ -83,18 +87,85 @@ class UsersController extends BaseController
     $this->templateEngine->render('Views/Users/Login');
   }
 
-  #[Post('login')]
-  public function login(): void
+  private function loginJson(
+    string $username,
+    string $password,
+    string $captchaType,
+    string $lotNumber,
+    string $passToken,
+    string $genTime,
+    string $captchaOutput,
+  ): void
   {
-    $redirect = $_POST['redirect'] ?? '';
-    $user = $this->userRepository->getUserByUsername($_POST['username']);
-    if (!$user || !password_verify($_POST['password'] . $user->salt, $user->password)) {
+    $captchaResult = match ($captchaType) {
+      "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      default => false
+    };
+
+    if (!$captchaResult) {
+      $this->json(["success" => false, "message" => "Invalid captcha"]);
+      return;
+    }
+
+    $user = $this->userRepository->getUserByUsername($username);
+    if (!$user || !password_verify($password . $user->salt, $user->password)) {
+      $this->json(["success" => false, "message" => "Invalid username or password"]);
+      return;
+    }
+
+    $this->sessionService->createSession($user);
+    $this->json(['success' => true]);
+  }
+
+  private function loginHtml(
+    string $username,
+    string $password,
+    string $redirect,
+    string $captchaType,
+    string $lotNumber,
+    string $passToken,
+    string $genTime,
+    string $captchaOutput,
+  ): void
+  {
+    $captchaResult = match ($captchaType) {
+      "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      default => false
+    };
+
+    if (!$captchaResult) {
+      $this->json(["success" => false, "message" => "Invalid captcha"]);
+      return;
+    }
+
+    $user = $this->userRepository->getUserByUsername($username);
+    if (!$user || !password_verify($password . $user->salt, $user->password)) {
       $this->location(PUBLIC_ROOT . 'users/login', 'Invalid username or password');
       return;
     }
 
     $this->sessionService->createSession($user);
     $this->location(PUBLIC_ROOT . $redirect);
+  }
+
+  #[Post('login')]
+  public function login(
+    #[Header('Accept')] string|null      $accept,
+    #[FormData('username')] string       $username,
+    #[FormData('password')] string       $password,
+    #[FormData('captcha_type')] string   $captchaType,
+    #[FormData('lot_number')] string     $lotNumber,
+    #[FormData('pass_token')] string     $passToken,
+    #[FormData('gen_time')] string       $genTime,
+    #[FormData('captcha_output')] string $captchaOutput,
+    #[FormData('redirect')] string       $redirect = '',
+  ): void
+  {
+    if ($accept === 'application/json') {
+      $this->loginJson($username, $password, $captchaType, $lotNumber, $passToken, $genTime, $captchaOutput);
+    } else {
+      $this->loginHtml($username, $password, $redirect, $captchaType, $lotNumber, $passToken, $genTime, $captchaOutput);
+    }
   }
 
   #[Get('logout')]
@@ -126,13 +197,13 @@ class UsersController extends BaseController
   }
 
   #[Get('changepassword')]
-  public function changepassword(): void
+  public function changePasswordPage(): void
   {
     $this->templateEngine->render('Views/Users/ChangePassword');
   }
 
   #[Post('changepassword')]
-  public function changepasswordPost(): void
+  public function changePassword(): void
   {
     $user = $this->userRepository->getUserByUsername($this->sessionService->getCurrentUser()->user_name);
     if (!$user || !password_verify($_POST['oldpassword'] . $user->salt, $user->password)) {

@@ -13,9 +13,12 @@ use Secra\Arch\Template\TemplateEngine;
 use Secra\Database;
 use Secra\Repositories\AttitudesRepository;
 use Secra\Repositories\CommentsRepository;
+use Secra\Repositories\ImageRepository;
 use Secra\Repositories\SecretsRepository;
 use Secra\Repositories\SessionRepository;
 use Secra\Repositories\UserRepository;
+use Secra\Services\CaptchaService;
+use Secra\Services\ImageService;
 use Secra\Services\PermissionService;
 use Secra\Services\SessionService;
 
@@ -38,6 +41,7 @@ $container->registerAll(
   CommentsRepository::class,
   SessionService::class,
   PermissionService::class,
+  CaptchaService::class,
   Router::class
 );
 

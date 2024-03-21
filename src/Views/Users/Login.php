@@ -49,6 +49,7 @@
                   <label for="password">密码</label>
                 </div>
               </div>
+              <div id="captcha-box"></div>
               <a class="link" href="./users/forgot-password">忘记密码？</a>
             </div>
             <div class="card-actions">
@@ -68,7 +69,10 @@
 
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
+<script src="./scripts/gt4.js"></script>
 <script>
+  let captchaObj = null;
+
   addRandomBackground("#auth-card-image");
 
   document
@@ -76,6 +80,70 @@
     .addEventListener("click", () => {
       addRandomBackground("#auth-card-image");
     });
+
+  const loginFormEl = document.getElementById('login-form');
+  loginFormEl.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if (!username || !password) {
+      alert('请输入用户名和密码');
+      return;
+    }
+    if (!captchaObj) {
+      alert('验证码加载中，请稍后');
+      return;
+    }
+    captchaObj.showCaptcha();
+  });
+
+  initGeetest4({
+    captchaId: '953b873286a0f857dc5b78d114c3eb3b',
+    product: 'bind',
+    hideSuccess: true
+  }, function (captcha) {
+    captchaObj = captcha;
+    captcha.onSuccess(function () {
+      var result = captcha.getValidate();
+      if (!result) {
+        return alert('请先完成验证');
+      }
+      console.log(result);
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('captcha_type', "geetest4");
+      formData.append('captcha_id', "953b873286a0f857dc5b78d114c3eb3b");
+      formData.append('lot_number', result.lot_number);
+      formData.append('pass_token', result.pass_token);
+      formData.append('gen_time', result.gen_time);
+      formData.append('captcha_output', result.captcha_output);
+      fetch('./users/login', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: formData
+      }).then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('网络错误');
+      }).then(data => {
+        if (data.success) {
+          const redirect = new URLSearchParams(window.location.search).get('redirect') || '';
+          window.location.href = `./${redirect}`
+        } else {
+          alert(data.message);
+          captcha.reset();
+        }
+      }).catch(error => {
+        alert(error.message);
+      });
+    });
+  });
 </script>
 </body>
 

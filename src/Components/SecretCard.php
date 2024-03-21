@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var callable $render
  * @var Secret $secret
@@ -8,13 +9,14 @@
  * @var bool $isAdmin
  */
 
+use Secra\Constants\AttitudeableType;
 use Secra\Constants\AttitudeType;
 use Secra\Models\Secret;
 use Secra\Models\User;
 
 $cardTag = $link ? 'a' : 'div';
 ?>
-<<?= $cardTag ?> class="card item-card"<?php if ($link) : ?> href="./secrets/<?= $secret->post_id ?>"<?php endif; ?> data-item-id="<?= $secret->post_id ?>" data-item-type="secrets">
+<<?= $cardTag ?> class="card item-card" <?php if ($link) : ?> href="./secrets/<?= $secret->post_id ?>" <?php endif; ?> data-item-id="<?= $secret->post_id ?>" data-item-type="secrets">
 <div class="card-content">
   <div class="item-info">
     <div class="item-info-text">#<?= $secret->post_id ?></div>
@@ -29,31 +31,25 @@ $cardTag = $link ? 'a' : 'div';
   </div>
 </div>
 <div class="card-actions">
-  <button class="button attitude-button" data-attitude-type="positive" data-attitudeable-type="secrets"
-          data-attitudeable-id="<?= $secret->post_id ?>" data-count="<?= $secret->positive_count ?>"
-          data-attituded="<?= $secret->user_attitude === AttitudeType::POSITIVE ? 1 : 0 ?>">
-    <span class="icon material-symbols-outlined"> thumb_up </span>
-    <span class="attitude-button-count">
-    <?php if ($secret->positive_count) : ?>
-      <?= $secret->positive_count ?>
-    <?php endif; ?>
-    </span>
-  </button>
-  <button class="button attitude-button" data-attitude-type="negative" data-attitudeable-type="secrets"
-          data-attitudeable-id="<?= $secret->post_id ?>" data-count="<?= $secret->negative_count ?>"
-          data-attituded="<?= $secret->user_attitude === AttitudeType::NEGATIVE ? 1 : 0 ?>">
-    <span class="icon material-symbols-outlined"> thumb_down </span>
-    <span class="attitude-button-count">
-    <?php if ($secret->negative_count) : ?>
-      <?= $secret->negative_count ?>
-    <?php endif; ?>
-    </span>
-  </button>
+  <?= $render('Components/AttitudeButton', [
+    'attitudeableType' => AttitudeableType::SECRETS,
+    'attitudeType' => AttitudeType::POSITIVE,
+    'attitudeableId' => $secret->post_id,
+    'count' => $secret->positive_count,
+    'attituded' => $secret->user_attitude === AttitudeType::POSITIVE,
+  ]) ?>
+  <?= $render('Components/AttitudeButton', [
+    'attitudeableType' => AttitudeableType::SECRETS,
+    'attitudeType' => AttitudeType::NEGATIVE,
+    'attitudeableId' => $secret->post_id,
+    'count' => $secret->negative_count,
+    'attituded' => $secret->user_attitude === AttitudeType::NEGATIVE,
+  ]) ?>
   <?php if ($showCommentBtn) : ?>
     <button class="button">
-      <span class="icon material-symbols-outlined">
-        chat_bubble
-      </span>
+        <span class="icon material-symbols-outlined">
+          chat_bubble
+        </span>
       <?php if ($secret->comment_count) : ?>
         <?= $secret->comment_count ?>
       <?php endif; ?>
@@ -61,9 +57,9 @@ $cardTag = $link ? 'a' : 'div';
   <?php endif; ?>
   <?php if ($isAdmin || ($currentUser->user_id === $secret->author_id)) : ?>
     <button class="button button-icon" id="secret-popup-btn-<?= $secret->post_id ?>">
-      <span class="icon material-symbols-outlined">
-        more_vert
-      </span>
+        <span class="icon material-symbols-outlined">
+          more_vert
+        </span>
     </button>
     <div class="dropdown-menu" data-activator="#secret-popup-btn-<?= $secret->post_id ?>">
       <?php if ($currentUser->user_id === $secret->author_id) : ?>

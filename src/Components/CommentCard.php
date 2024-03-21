@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var callable $render
  * @var Comment $comment
@@ -6,6 +7,7 @@
  * @var bool $isAdmin
  */
 
+use Secra\Constants\AttitudeableType;
 use Secra\Constants\AttitudeType;
 use Secra\Models\Comment;
 use Secra\Models\User;
@@ -26,39 +28,36 @@ use Secra\Models\User;
     </div>
   </div>
   <div class="card-actions">
-    <button class="button attitude-button" data-attitude-type="positive" data-attitudeable-type="comments"
-            data-attitudeable-id="<?= $comment->post_id ?>" data-count="<?= $comment->positive_count ?>"
-            data-attituded="<?= $comment->user_attitude === AttitudeType::POSITIVE ? 1 : 0 ?>">
-      <span class="icon material-symbols-outlined"> thumb_up </span>
-      <span class="attitude-button-count">
-    <?php if ($comment->positive_count) : ?>
-      <?= $comment->positive_count ?>
-    <?php endif; ?>
-    </span>
-    </button>
-    <button class="button attitude-button" data-attitude-type="negative" data-attitudeable-type="comments"
-            data-attitudeable-id="<?= $comment->post_id ?>" data-count="<?= $comment->negative_count ?>"
-            data-attituded="<?= $comment->user_attitude === AttitudeType::NEGATIVE ? 1 : 0 ?>">
-      <span class="icon material-symbols-outlined"> thumb_down </span>
-      <span class="attitude-button-count">
-    <?php if ($comment->negative_count) : ?>
-      <?= $comment->negative_count ?>
-    <?php endif; ?>
-    </span>
-    </button>
+    <?= $render('Components/AttitudeButton', [
+      'attitudeableType' => AttitudeableType::COMMENTS,
+      'attitudeType' => AttitudeType::POSITIVE,
+      'attitudeableId' => $comment->comment_id,
+      'count' => $comment->positive_count,
+      'attituded' => $comment->user_attitude === AttitudeType::POSITIVE,
+    ]) ?>
+    <?= $render('Components/AttitudeButton', [
+      'attitudeableType' => AttitudeableType::COMMENTS,
+      'attitudeType' => AttitudeType::NEGATIVE,
+      'attitudeableId' => $comment->comment_id,
+      'count' => $comment->negative_count,
+      'attituded' => $comment->user_attitude === AttitudeType::NEGATIVE,
+    ]) ?>
     <!--        <button class="button">-->
     <!--          <span class="icon material-symbols-outlined">-->
     <!--            chat_bubble-->
     <!--          </span>-->
-    <!--                --><?php //if ($comment->comment_count) : ?>
-    <!--                  --><?php //= $comment->comment_count ?>
-    <!--                --><?php //endif; ?>
+    <!--                --><?php //if ($comment->comment_count) : 
+    ?>
+    <!--                  --><?php //= $comment->comment_count 
+    ?>
+    <!--                --><?php //endif; 
+    ?>
     <!--        </button>-->
     <?php if ($isAdmin || ($currentUser->user_id === $comment->user_id)) : ?>
       <button class="button button-icon" id="secret-popup-btn-<?= $comment->comment_id ?>">
-      <span class="icon material-symbols-outlined">
-        more_vert
-      </span>
+        <span class="icon material-symbols-outlined">
+          more_vert
+        </span>
       </button>
       <div class="dropdown-menu" data-activator="#secret-popup-btn-<?= $comment->comment_id ?>">
         <?php if ($currentUser->user_id === $comment->user_id) : ?>

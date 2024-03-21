@@ -21,6 +21,8 @@ use Secra\Models\Secret;
 use Secra\Pipes\ParseSecretsOrderColumnPipe;
 use Secra\Repositories\SecretsRepository;
 use Secra\Services\SessionService;
+use Secra\Models\Comment;
+use Secra\Repositories\CommentsRepository;
 
 
 #[Provide(SecretsController::class)]
@@ -30,6 +32,7 @@ class SecretsController extends BaseController
 {
   #[Inject] private SecretsRepository $secretsRepository;
   #[Inject] private SessionService $sessionService;
+  #[Inject] private CommentsRepository $commentsRepository;
 
   #[Get(':secretId(\d+)')]
   public function secretDetailPage(#[Param] string $secretId): void
@@ -211,4 +214,91 @@ class SecretsController extends BaseController
       $this->createSecretHtml($content, $nickname);
     }
   }
+
+  #[Get]
+  private function createCommentJson(string $content, ?string nickname) : void
+  {
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->json(
+        ["success" => false, "message" => "You must be logged in to publish a comment"],
+        401
+      );
+      return;
+    }
+    if (empty($content)) {
+      $this->json(
+        ["success" => false, "message" => "Content cannot be empty"],
+        400
+      );
+      return;
+    }
+    $encoded_content = htmlentities($content, ENT_QUOTES);
+    $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
+    $comment = new Comment();
+    $comment->author_id = $this->sessionService->getCurrentUser()->user_id;
+    $comment->content = $encoded_content;
+    $comment->nickname = $encoded_nickname;
+    if ($comment = $this->commentsRepository->saveComment($comment)) {
+      $this->json(
+        [
+          "success" => true,
+          "message" => "Comment saved successfully",
+          "data" => [
+            "comment" => $comment
+          ]
+        ],
+        201
+      );
+    } else {
+      $this->json(
+        ["success" => false, "message" => "Failed to publish comment"],
+        500
+      );
+    }
+  }
+
+  private function createCommentHtml(string $content, ?string nickname) : void
+  {
+    if (!$this->sessionService->isUserLoggedIn()) {
+      $this->redirectDelay(PUBLIC_ROOT . "users/login", 3);
+      echo "You must be logged in to publish a comment";
+      return;
+    }
+    $referer = $_SERVER['HTTP_REFERER'];
+    if (empty($content)) {
+      $this->redirectDelay($referer, 3);
+      echo "Content cannot be empty";
+      return;
+    }
+    $encoded_content = htmlentities($content, ENT_QUOTES);
+    $encoded_nickname = empty($nickname) ? null : htmlentities($nickname, ENT_QUOTES);
+    $comment = new Comment();
+    $comment->author_id = $this->sessionService->getCurrentUser()->user_id;
+    $comment->content = $encoded_content;
+    $comment->nickname = $encoded_nickname;
+    if ($comment = $this->commentsRepository->saveComment($comment)) {
+      $this->redirect($referer);
+    } else {
+      $this->redirectDelay($referer, 3);
+      echo "Failed to publish comment";
+    }
+  }
+
+  #[Post]
+  public function createComment(
+    #[Header('Accept')] string|null            $accept,
+    #[FormData("content")] string              $content,
+    #[FormData("nickname", false)] string|null $nickname = null,
+  ): void
+  {
+    if ($accept === "application/json") {
+      $this->createCommentJson($content, $nickname);
+    } else {
+      $this->createCommentHtml($content, $nickname);
+    }
+  }
+
+
 }
+
+

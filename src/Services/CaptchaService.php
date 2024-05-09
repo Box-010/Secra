@@ -2,6 +2,7 @@
 
 namespace Secra\Services;
 
+use GdImage;
 use Secra\Arch\DI\Attributes\Provide;
 use Secra\Arch\DI\Attributes\Singleton;
 
@@ -56,15 +57,18 @@ class CaptchaService
   }
 
   public function validateGeeTest4(
-    string $captchaId,
-    string $captchaKey,
-    string $lotNumber,
-    string $passToken,
-    string $genTime,
-    string $captchaOutput,
-    string $apiServer = "http://gcaptcha4.geetest.com"
+    string  $captchaId,
+    string  $captchaKey,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
+    string  $apiServer = "http://gcaptcha4.geetest.com"
   ): bool
   {
+    if (!$lotNumber || !$passToken || !$genTime || !$captchaOutput) {
+      return false;
+    }
     $sign_token = hash_hmac('sha256', $lotNumber, $captchaKey);
     $query = [
       "lot_number" => $lotNumber,
@@ -79,11 +83,11 @@ class CaptchaService
 
   /**
    * @param string $captchaId
-   * @return array ["captchaCode" => string, "captchaBase64" => string]
+   * @return GdImage captcha image
    */
-  public function generateCaptchaImage(
+  private function generateCaptchaImage(
     string $captchaId
-  ): array
+  ): GdImage
   {
     if (session_status() == PHP_SESSION_NONE) {
       session_start();
@@ -113,15 +117,26 @@ class CaptchaService
       $lineColor = imagecolorallocate($image, rand(80, 220), rand(80, 220), rand(80, 220));
       imageline($image, rand(1, 99), rand(1, 29), rand(1, 99), rand(1, 29), $lineColor);
     }
-    ob_start();
+    return $image;
+  }
+
+  public function showCaptcha(
+    string $captchaId
+  ): void
+  {
+    $image = $this->generateCaptchaImage($captchaId);
     imagepng($image);
-    $imageData = ob_get_contents();
+  }
+
+  public function generateCaptchaBase64(
+    string $captchaId
+  ): string
+  {
+    ob_start();
+    $this->showCaptcha($captchaId);
+    $image_data = ob_get_contents();
     ob_end_clean();
-    imagedestroy($image);
-    return [
-      "captchaCode" => $captchaCode,
-      "captchaBase64" => base64_encode($imageData)
-    ];
+    return 'data:image/png;base64,' . base64_encode($image_data);
   }
 
   public function validateCaptcha(

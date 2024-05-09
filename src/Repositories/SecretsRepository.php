@@ -31,8 +31,7 @@ class SecretsRepository extends BaseRepository
     bool               $desc = true,
     int                $limit = 10,
     int                $offset = 0
-  ): array
-  {
+  ): array {
     $order = $desc ? 'DESC' : 'ASC';
     $stmt = $this->db->query("SELECT * FROM v_secret
     ORDER BY {$orderBy->value} $order
@@ -49,7 +48,7 @@ class SecretsRepository extends BaseRepository
 
   private function resolveSecretsAttitudeStatus(array $secrets): array
   {
-    return array_map(fn(Secret $secret) => $this->resolveSecretAttitudeStatus($secret), $secrets);
+    return array_map(fn (Secret $secret) => $this->resolveSecretAttitudeStatus($secret), $secrets);
   }
 
   private function resolveSecretAttitudeStatus(Secret $secret): Secret
@@ -63,12 +62,12 @@ class SecretsRepository extends BaseRepository
 
   private function resolveSecretsImageUrls(array $secrets): array
   {
-    return array_map(fn(Secret $secret) => $this->resolveSecretImageUrls($secret), $secrets);
+    return array_map(fn (Secret $secret) => $this->resolveSecretImageUrls($secret), $secrets);
   }
 
   private function resolveSecretImageUrls(Secret $secret): Secret
   {
-    $secret->image_urls = array_map(fn($image) => PUBLIC_ROOT . 'usr/uploads/' . $this->imageRepository->get($image), $secret->images);
+    $secret->image_urls = array_map(fn ($image) => PUBLIC_ROOT . 'usr/uploads/' . $this->imageRepository->get($image), $secret->images);
     return $secret;
   }
 
@@ -88,8 +87,7 @@ class SecretsRepository extends BaseRepository
     bool               $desc = true,
     int                $limit = 10,
     int                $offset = 0
-  ): array
-  {
+  ): array {
     $order = $desc ? 'DESC' : 'ASC';
     $stmt = $this->db->query("SELECT * FROM v_secret
     WHERE author_id = :userId
@@ -122,8 +120,7 @@ class SecretsRepository extends BaseRepository
     bool               $desc = true,
     int                $limit = 10,
     int                $offset = 0
-  ): array
-  {
+  ): array {
     $query = trim($query);
     $query = preg_replace('/\s+/i', ' ', $query);
     $query = implode('%', explode(' ', $query));

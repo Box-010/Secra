@@ -97,6 +97,42 @@
     captchaObj.showCaptcha();
   });
 
+  function submitLogin(captchaResult) {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('captcha_type', "geetest4");
+    formData.append('captcha_id', "953b873286a0f857dc5b78d114c3eb3b");
+    formData.append('lot_number', captchaResult.lot_number);
+    formData.append('pass_token', captchaResult.pass_token);
+    formData.append('gen_time', captchaResult.gen_time);
+    formData.append('captcha_output', captchaResult.captcha_output);
+    fetch('./users/login', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json'
+      },
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('网络错误');
+    }).then(data => {
+      if (data.success) {
+        const redirect = new URLSearchParams(window.location.search).get('redirect') || '';
+        window.location.href = `./${redirect}`
+      } else {
+        alert(data.message);
+        captchaObj.reset();
+      }
+    }).catch(error => {
+      alert(error.message);
+    });
+  }
+
   initGeetest4({
     captchaId: '953b873286a0f857dc5b78d114c3eb3b',
     product: 'bind',
@@ -108,40 +144,7 @@
       if (!result) {
         return alert('请先完成验证');
       }
-      console.log(result);
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('password', password);
-      formData.append('captcha_type', "geetest4");
-      formData.append('captcha_id', "953b873286a0f857dc5b78d114c3eb3b");
-      formData.append('lot_number', result.lot_number);
-      formData.append('pass_token', result.pass_token);
-      formData.append('gen_time', result.gen_time);
-      formData.append('captcha_output', result.captcha_output);
-      fetch('./users/login', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
-        body: formData
-      }).then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error('网络错误');
-      }).then(data => {
-        if (data.success) {
-          const redirect = new URLSearchParams(window.location.search).get('redirect') || '';
-          window.location.href = `./${redirect}`
-        } else {
-          alert(data.message);
-          captcha.reset();
-        }
-      }).catch(error => {
-        alert(error.message);
-      });
+      submitLogin(result);
     });
   });
 </script>

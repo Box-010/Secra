@@ -33,14 +33,19 @@ class UserRepository extends BaseRepository
     return $stmt->fetch();
   }
 
-  public function save(User $user)
+  public function save(User $user): User|false
   {
-    $this->db->query('INSERT INTO users (user_name, password, salt, email) VALUES (?, ?, ?, ?)', [
+    $stmt = $this->db->query('INSERT INTO users (user_name, password, salt, email) VALUES (?, ?, ?, ?)', [
       $user->user_name,
       $user->password,
       $user->salt,
       $user->email,
     ]);
+    if (!$stmt) {
+      return false;
+    }
+    $id = $this->db->lastInsertId();
+    return $this->getUserById($id);
   }
 
   public function getRoleByName(string $role_name): Role|bool

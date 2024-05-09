@@ -77,6 +77,7 @@
 
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
+<script src="./scripts/gt4.js"></script>
 <script>
   addRandomBackground("#auth-card-image");
 
@@ -89,6 +90,8 @@
   document
     .getElementById("register-form")
     .addEventListener("submit", (e) => {
+      e.preventDefault();
+
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
       const passwordConfirm =
@@ -96,15 +99,71 @@
 
       if (!username || !password || !passwordConfirm) {
         alert("请填写完整信息");
-        e.preventDefault();
         return;
       }
       if (password !== passwordConfirm) {
         alert("两次输入的密码不一致");
-        e.preventDefault();
-
+        return;
       }
+      if (!captchaObj) {
+        alert('验证码加载中，请稍后');
+        return;
+      }
+      captchaObj.showCaptcha();
     });
+
+  function submitRegister(captchaResult) {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const email = document.getElementById('email').value;
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('email', email);
+    formData.append('captcha_type', "geetest4");
+    formData.append('captcha_id', "953b873286a0f857dc5b78d114c3eb3b");
+    formData.append('lot_number', captchaResult.lot_number);
+    formData.append('pass_token', captchaResult.pass_token);
+    formData.append('gen_time', captchaResult.gen_time);
+    formData.append('captcha_output', captchaResult.captcha_output);
+    fetch('./users/register', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json'
+      },
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('网络错误');
+    }).then(data => {
+      if (data.success) {
+        const redirect = new URLSearchParams(window.location.search).get('redirect') || '';
+        window.location.href = `./${redirect}`
+      } else {
+        alert(data.message);
+        captchaObj.reset();
+      }
+    }).catch(error => {
+      alert(error.message);
+    });
+  }
+
+  initGeetest4({
+    captchaId: '953b873286a0f857dc5b78d114c3eb3b',
+    product: 'bind',
+    hideSuccess: true
+  }, function (captcha) {
+    captchaObj = captcha;
+    captcha.onSuccess(function () {
+      var result = captcha.getValidate();
+      if (!result) {
+        return alert('请先完成验证');
+      }
+      submitRegister(result);
+    });
+  });
 </script>
 </body>
 

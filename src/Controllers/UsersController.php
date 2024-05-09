@@ -2,6 +2,7 @@
 
 namespace Secra\Controllers;
 
+use Exception;
 use PDOException;
 use Secra\Arch\DI\Attributes\Inject;
 use Secra\Arch\DI\Attributes\Provide;
@@ -39,20 +40,90 @@ class UsersController extends BaseController
     $this->templateEngine->render('Views/Users/Register');
   }
 
-  #[Post('register')]
-  public function register(): void
+  private function registerJson(
+    string  $username,
+    string  $password,
+    string  $email,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
+  ): void
   {
-    $redirect = $_POST['redirect'] ?? '';
+    $captchaResult = match ($captchaType) {
+      "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
+      default => false
+    };
+    if (!$captchaResult) {
+      $this->json(["success" => false, "message" => "Invalid captcha"]);
+      return;
+    }
 
-    $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+    $username = htmlspecialchars($username, ENT_QUOTES);
+    $email = filter_var($email, FILTER_VALIDATE_EMAIL);
 
-    $username = htmlspecialchars($_POST['username']);
+    if ($this->userRepository->getUserByUsername($username)) {
+      $this->json(["success" => false, "message" => "Username already taken"]);
+      return;
+    }
+    if ($this->userRepository->getUserByEmail($email)) {
+      $this->json(["success" => false, "message" => "Email already used"]);
+      return;
+    }
+
+    $user = new User();
+    $user->user_name = $username;
+    $user->email = $email;
+
+    $randomSalt = bin2hex(random_bytes(32));
+    $user->password = password_hash($password . $randomSalt, PASSWORD_DEFAULT);
+    $user->salt = $randomSalt;
+
+    if ($user = $this->userRepository->save($user)) {
+      try {
+        $this->sessionService->createSession($user);
+        $this->json(['success' => true]);
+      } catch (Exception $e) {
+        $this->json(["success" => false, "message" => "Internal error"]);
+      }
+    } else {
+      $this->json(["success" => false, "message" => "Internal error"]);
+    }
+  }
+
+  private function registerHtml(
+    string  $username,
+    string  $password,
+    string  $email,
+    string  $redirect,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
+  ): void
+  {
+    $captchaResult = match ($captchaType) {
+      "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
+      default => false
+    };
+    if (!$captchaResult) {
+      $this->location(PUBLIC_ROOT . 'users/register', 'Invalid captcha');
+      return;
+    }
+
+    $username = htmlspecialchars($username, ENT_QUOTES);
+    $email = filter_var($email, FILTER_VALIDATE_EMAIL);
 
     if ($this->userRepository->getUserByUsername($username)) {
       $this->location(PUBLIC_ROOT . 'users/register', 'Username already taken');
       return;
     }
-
     if ($this->userRepository->getUserByEmail($email)) {
       $this->location(PUBLIC_ROOT . 'users/register', 'Email already used');
       return;
@@ -63,12 +134,41 @@ class UsersController extends BaseController
     $user->email = $email;
 
     $randomSalt = bin2hex(random_bytes(32));
-    $user->password = password_hash($_POST['password'] . $randomSalt, PASSWORD_DEFAULT);
+    $user->password = password_hash($password . $randomSalt, PASSWORD_DEFAULT);
     $user->salt = $randomSalt;
 
-    $this->userRepository->save($user);
-    $this->sessionService->createSession($username);
-    $this->location(PUBLIC_ROOT . $redirect);
+    if ($user = $this->userRepository->save($user)) {
+      try {
+        $this->sessionService->createSession($user);
+        $this->location(PUBLIC_ROOT . $redirect);
+      } catch (Exception $e) {
+        $this->location(PUBLIC_ROOT . 'users/register', "Internal error");
+      }
+    } else {
+      $this->location(PUBLIC_ROOT . 'users/register', 'Internal error');
+    }
+  }
+
+  #[Post('register')]
+  public function register(
+    #[Header('Accept')] string|null              $accept,
+    #[FormData('username')] string               $username,
+    #[FormData('password')] string               $password,
+    #[FormData('email')] string                  $email,
+    #[FormData('captcha_type')] string           $captchaType,
+    #[FormData('captcha_code', false)] ?string   $captchaCode,
+    #[FormData('lot_number', false)] ?string     $lotNumber,
+    #[FormData('pass_token', false)] ?string     $passToken,
+    #[FormData('gen_time', false)] ?string       $genTime,
+    #[FormData('captcha_output', false)] ?string $captchaOutput,
+    #[FormData('redirect')] string               $redirect = '',
+  ): void
+  {
+    if ($accept === 'application/json') {
+      $this->registerJson($username, $password, $email, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
+    } else {
+      $this->registerHtml($username, $password, $email, $redirect, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
+    }
   }
 
   private function location(string $location, string|null $error = null): void
@@ -88,17 +188,19 @@ class UsersController extends BaseController
   }
 
   private function loginJson(
-    string $username,
-    string $password,
-    string $captchaType,
-    string $lotNumber,
-    string $passToken,
-    string $genTime,
-    string $captchaOutput,
+    string  $username,
+    string  $password,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
   ): void
   {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
       default => false
     };
 
@@ -118,18 +220,20 @@ class UsersController extends BaseController
   }
 
   private function loginHtml(
-    string $username,
-    string $password,
-    string $redirect,
-    string $captchaType,
-    string $lotNumber,
-    string $passToken,
-    string $genTime,
-    string $captchaOutput,
+    string  $username,
+    string  $password,
+    string  $redirect,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
   ): void
   {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
+      "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
       default => false
     };
 
@@ -150,21 +254,22 @@ class UsersController extends BaseController
 
   #[Post('login')]
   public function login(
-    #[Header('Accept')] string|null      $accept,
-    #[FormData('username')] string       $username,
-    #[FormData('password')] string       $password,
-    #[FormData('captcha_type')] string   $captchaType,
-    #[FormData('lot_number')] string     $lotNumber,
-    #[FormData('pass_token')] string     $passToken,
-    #[FormData('gen_time')] string       $genTime,
-    #[FormData('captcha_output')] string $captchaOutput,
-    #[FormData('redirect')] string       $redirect = '',
+    #[Header('Accept')] string|null              $accept,
+    #[FormData('username')] string               $username,
+    #[FormData('password')] string               $password,
+    #[FormData('captcha_type')] string           $captchaType,
+    #[FormData('captcha_code', false)] ?string   $captchaCode,
+    #[FormData('lot_number', false)] ?string     $lotNumber,
+    #[FormData('pass_token', false)] ?string     $passToken,
+    #[FormData('gen_time', false)] ?string       $genTime,
+    #[FormData('captcha_output', false)] ?string $captchaOutput,
+    #[FormData('redirect')] string               $redirect = '',
   ): void
   {
     if ($accept === 'application/json') {
-      $this->loginJson($username, $password, $captchaType, $lotNumber, $passToken, $genTime, $captchaOutput);
+      $this->loginJson($username, $password, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     } else {
-      $this->loginHtml($username, $password, $redirect, $captchaType, $lotNumber, $passToken, $genTime, $captchaOutput);
+      $this->loginHtml($username, $password, $redirect, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     }
   }
 

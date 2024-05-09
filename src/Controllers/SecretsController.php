@@ -23,6 +23,7 @@ use Secra\Models\Secret;
 use Secra\Pipes\ParseSecretsOrderColumnPipe;
 use Secra\Repositories\CommentsRepository;
 use Secra\Repositories\SecretsRepository;
+use Secra\Services\CaptchaService;
 use Secra\Services\PermissionService;
 use Secra\Services\SessionService;
 
@@ -36,6 +37,7 @@ class SecretsController extends BaseController
   #[Inject] private CommentsRepository $commentsRepository;
   #[Inject] private SessionService $sessionService;
   #[Inject] private PermissionService $permissionService;
+  #[Inject] private CaptchaService $captchaService;
 
   #[Get(':secretId(\d+)')]
   public function secretDetailPage(#[Param] string $secretId): void
@@ -167,27 +169,62 @@ class SecretsController extends BaseController
     }
   }
 
+  private function validateCaptchas(
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
+  ): bool
+  {
+    return match ($captchaType) {
+      "geetest4" => $this->captchaService->validateGeeTest4("9edebb865c50012b456e014da606a77c", "5325613a1246af81c65c412ac5533a85", $lotNumber, $passToken, $genTime, $captchaOutput),
+      "classic" => $this->captchaService->validateCaptcha("publish", $captchaCode),
+      default => false
+    };
+  }
+
   #[Post]
   public function createSecret(
-    #[Header('Accept')] string|null            $accept,
-    #[FormData("content")] string              $content,
-    #[FormData("nickname", false)] string|null $nickname = null,
-    #[FormData("imageIds", false)] string|null $imageIdsJson = null,
+    #[Header('Accept')] string|null              $accept,
+    #[FormData("content")] string                $content,
+    #[FormData('captcha_type')] string           $captchaType,
+    #[FormData('captcha_code', false)] ?string   $captchaCode,
+    #[FormData('lot_number', false)] ?string     $lotNumber,
+    #[FormData('pass_token', false)] ?string     $passToken,
+    #[FormData('gen_time', false)] ?string       $genTime,
+    #[FormData('captcha_output', false)] ?string $captchaOutput,
+    #[FormData("nickname", false)] string|null   $nickname = null,
+    #[FormData("imageIds", false)] string|null   $imageIdsJson = null,
   ): void
   {
     if ($accept === "application/json") {
-      $this->createSecretJson($content, $nickname, $imageIdsJson);
+      $this->createSecretJson($content, $nickname, $imageIdsJson, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     } else {
-      $this->createSecretHtml($content, $nickname, $imageIdsJson);
+      $this->createSecretHtml($content, $nickname, $imageIdsJson, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     }
   }
 
   private function createSecretJson(
     string  $content,
     ?string $nickname,
-    ?string $imageIdsJson
+    ?string $imageIdsJson,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
   ): void
   {
+    if (!$this->validateCaptchas($captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput)) {
+      $this->json(
+        ["success" => false, "message" => "Invalid captcha"],
+        400
+      );
+      return;
+    }
     if (!$this->sessionService->isUserLoggedIn()) {
       $this->json(
         ["success" => false, "message" => "You must be logged in to publish a secret"],
@@ -240,10 +277,21 @@ class SecretsController extends BaseController
   private function createSecretHtml(
     string  $content,
     ?string $nickname,
-    ?string $imageIdsJson
+    ?string $imageIdsJson,
+    string  $captchaType,
+    ?string $captchaCode,
+    ?string $lotNumber,
+    ?string $passToken,
+    ?string $genTime,
+    ?string $captchaOutput,
   ): void
   {
     $referer = $_SERVER['HTTP_REFERER'];
+    if (!$this->validateCaptchas($captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput)) {
+      $this->redirectDelay($referer, 3);
+      echo "Invalid captcha";
+      return;
+    }
     if (!$this->sessionService->isUserLoggedIn()) {
       $this->redirectDelay(PUBLIC_ROOT . "users/login", 3);
       echo "You must be logged in to publish a secret";

@@ -19,7 +19,7 @@ class Secret
   public int $comment_count;
   public int $positive_count;
   public int $negative_count;
-  public ?AttitudeType $user_attitude;
+  public ?AttitudeType $user_attitude = AttitudeType::NEUTRAL;
 
   public function __set($name, $value)
   {

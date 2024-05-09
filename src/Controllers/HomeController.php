@@ -64,13 +64,13 @@ class HomeController extends BaseController
   #[Get('search')]
   public function searchPage(
     #[Query('q')] string $query
-  ): void
-  {
+  ): void {
     $secrets = $this->secretsRepository->search($query);
     $secretCount = $this->secretsRepository->countBySearchQuery($query);
     $hasMore = $secretCount > count($secrets);
+    $encodedQuery = htmlentities($query, ENT_QUOTES);
     $this->templateEngine->render('Views/Search', [
-      'query' => $query,
+      'query' => $encodedQuery,
       'secrets' => $secrets,
       'hasMore' => $hasMore
     ]);

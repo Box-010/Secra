@@ -7,6 +7,7 @@
  * @var Comment[] $comments
  * @var bool $hasMore
  * @var int $commentCount
+ * @var string $nonce
  */
 
 use Secra\Models\Comment;
@@ -118,7 +119,7 @@ use Secra\Models\Secret;
 <script src="./scripts/input.js"></script>
 <script src="./scripts/dropdown.js"></script>
 <script src="./scripts/load-more.js"></script>
-<script>
+<script nonce="<?= $nonce ?>">
   const secretId = parseInt(document.getElementById("secretId").dataset.secretId);
 
   const replyFormEl = document.getElementById("reply-form");

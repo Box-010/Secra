@@ -3,6 +3,7 @@
 /**
  * @var callable(string, array): string $render
  * @var bool $isLoggedIn
+ * @var string $nonce
  */
 ?>
 <!DOCTYPE html>
@@ -123,7 +124,7 @@
 
 <script src="./scripts/input.js"></script>
 <script src="./scripts/gt4.js"></script>
-<script>
+<script nonce="<?= $nonce ?>">
   const publishFormEl = document.getElementById("publish-form");
   const imageInputEl = document.getElementById("image-input");
   const imagePreviewEl = document.getElementById("image-preview");

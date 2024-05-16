@@ -50,7 +50,9 @@ $container->registerAll(
 $sessionService = $container->get(SessionService::class);
 $permissionService = $container->get(PermissionService::class);
 
-$container->set(TemplateEngine::class, function () use ($sessionService, $permissionService) {
+$nonce = bin2hex(openssl_random_pseudo_bytes(32));
+
+$container->set(TemplateEngine::class, function () use ($sessionService, $permissionService, $nonce) {
   return new TemplateEngine(
     __DIR__,
     [
@@ -63,6 +65,9 @@ $container->set(TemplateEngine::class, function () use ($sessionService, $permis
       "isAdmin" => function () use ($permissionService) {
         return $permissionService->hasRole('admin');
       },
+      "nonce" => function () use ($nonce) {
+        return $nonce;
+      }
     ]
   );
 });

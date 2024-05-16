@@ -1,6 +1,7 @@
 <?php
 /**
  * @var callable(string, array): string $render
+ * @var string $nonce
  */
 ?>
 <!DOCTYPE html>
@@ -70,7 +71,7 @@
 <script src="./scripts/random-bg.js"></script>
 <script src="./scripts/input.js"></script>
 <script src="./scripts/gt4.js"></script>
-<script>
+<script nonce="<?= $nonce ?>">
   let captchaObj = null;
 
   addRandomBackground("#auth-card-image");

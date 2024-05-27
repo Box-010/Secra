@@ -50,8 +50,7 @@ class UsersController extends BaseController
     ?string $passToken,
     ?string $genTime,
     ?string $captchaOutput,
-  ): void
-  {
+  ): void {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
       "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
@@ -105,8 +104,7 @@ class UsersController extends BaseController
     ?string $passToken,
     ?string $genTime,
     ?string $captchaOutput,
-  ): void
-  {
+  ): void {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
       "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
@@ -162,8 +160,7 @@ class UsersController extends BaseController
     #[FormData('gen_time', false)] ?string       $genTime,
     #[FormData('captcha_output', false)] ?string $captchaOutput,
     #[FormData('redirect')] string               $redirect = '',
-  ): void
-  {
+  ): void {
     if ($accept === 'application/json') {
       $this->registerJson($username, $password, $email, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     } else {
@@ -196,8 +193,7 @@ class UsersController extends BaseController
     ?string $passToken,
     ?string $genTime,
     ?string $captchaOutput,
-  ): void
-  {
+  ): void {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
       "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
@@ -229,8 +225,7 @@ class UsersController extends BaseController
     ?string $passToken,
     ?string $genTime,
     ?string $captchaOutput,
-  ): void
-  {
+  ): void {
     $captchaResult = match ($captchaType) {
       "geetest4" => $this->captchaService->validateGeeTest4("953b873286a0f857dc5b78d114c3eb3b", "be31e986e0cc1c48e4a9141cb604abea", $lotNumber, $passToken, $genTime, $captchaOutput),
       "classic" => $this->captchaService->validateCaptcha("register", $captchaCode),
@@ -264,8 +259,7 @@ class UsersController extends BaseController
     #[FormData('gen_time', false)] ?string       $genTime,
     #[FormData('captcha_output', false)] ?string $captchaOutput,
     #[FormData('redirect')] string               $redirect = '',
-  ): void
-  {
+  ): void {
     if ($accept === 'application/json') {
       $this->loginJson($username, $password, $captchaType, $captchaCode, $lotNumber, $passToken, $genTime, $captchaOutput);
     } else {
@@ -277,7 +271,7 @@ class UsersController extends BaseController
   public function logout(): void
   {
     $this->sessionService->destroyCurrentSession();
-    $this->location('/');
+    $this->location(PUBLIC_ROOT);
   }
 
   #[Get('forgot-password')]
